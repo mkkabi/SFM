@@ -1,0 +1,447 @@
+.container {
+    width: 75%;
+}
+
+.navbar-brand img{
+    max-height:60px;
+    margin-left:30px
+}
+
+.navbar-brand img:hover{
+    opacity: 0.8;
+}
+
+footer {
+    position:fixed;
+    bottom:0;
+    width: 100%;
+}
+
+.clearfix::after,
+.calendar ol::after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+.calendar{
+    background:#eee;
+    margin-bottom: 150px!important;
+    /*     border:25px solid #eee; */
+
+    padding:25px!important;
+}
+
+.calendar td{
+    padding:5px!important;
+}
+
+.calendar .time{
+    max-width:40px;
+}
+
+.calendar .time, .calendar .day-names{
+    background:#eeeeee;
+    text-align: center;
+}
+.calendar td{
+    max-width:120px;
+    height:150px;
+    font-size:16px;
+}
+
+.calendar td:hover{
+    background:#eeeeee26;
+}
+.calendar .days{
+    border:1px solid #eeeeee;
+    min-width:120px;
+}
+
+.event{
+    position: relative;
+}
+
+.event-users{
+    display:table;
+    width: 100%;
+}
+
+.participants, .owner {
+    width:50%;
+    display: table-cell;
+
+}
+
+.event-body{
+    margin-top: 4px;
+    margin-bottom: 10px;
+    display: table;
+}
+
+.event-title, .event-action{
+    display: table-cell;
+}
+.event-title{
+    width:100%;
+    text-align: justify;
+}
+
+.calendar-icon{
+    width: 25px;
+    height:auto;
+    opacity:.4;
+}
+
+.calendar-icon:hover{
+    opacity:1;
+    transition:0.5s;
+    cursor:pointer;
+}
+
+.event-action a img{
+    margin: 10px 0 0px 6px;
+}
+
+.calendar_navigation a {
+ margin: 0 20px 15px 20px;
+}
+.no-underline{display: inline-block}
+.no-underline:hover{text-decoration:none; transform: scale(1.3)}
+.arrow{font-size: 45px}
+
+.dates{
+    background: #f1f1f169;
+    top: 0;
+    padding: 2px;
+}
+
+.date-start{
+    position: absolute;
+    top: 0;
+    left:5px;
+}
+
+.date-end{
+    position: absolute;
+    top: 0;
+    right:5px;
+}
+
+
+/*Colors*/
+.dark-green{
+    color: #2a5a2a;
+}
+.filter-blue{
+    filter: invert(53%) sepia(39%) saturate(6428%) hue-rotate(164deg) brightness(98%) contrast(101%);
+}
+
+.filter-green{
+    filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%);
+}
+
+.filter-red{
+    filter: invert(18%) sepia(33%) saturate(4983%) hue-rotate(338deg) brightness(116%) contrast(91%);
+
+}
+
+table tr td.red{background:red}
+table.calendar-simple td{text-align:center}
+
+table.calendar-simple thead{background:#6c757d}
+
+
+.simple-calendar-header{
+    padding: 20px 25px;
+    width: 100%;
+    background: #1abc9c;
+    text-align: center;
+}
+
+.form-control-color{
+    min-width:38px!important;
+    max-width:38px!important;
+    height:38px;
+    padding:2px;
+    border:none;
+    background-color:#f0f0f0;
+
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* background-color: transparent; */
+    cursor: pointer;
+}
+.form-control-color::-webkit-color-swatch {
+    border: none;
+}
+.form-control-color::-moz-color-swatch {
+    border: none;
+}
+
+.reverse.bottom-top{
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+}
+
+.upright-text{
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+}
+
+.upright-text, .reverse{max-width:45px}
+
+.tg  {border-collapse:collapse;border-color:#93a1a1;border-spacing:0;}
+.tg td{background-color:#fdf6e3;border-color:#93a1a1;border-style:solid;border-width:1px;color:#002b36;
+    font-family:Arial, sans-serif;font-size:14px;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{background-color:#657b83;border-color:#93a1a1;border-style:solid;border-width:1px;color:#fdf6e3;
+    font-family:Arial, sans-serif;font-size:14px;font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+
+.tg .tg-cly1{text-align:left;vertical-align:middle}
+.tg .tg-0lax{text-align:left;vertical-align:top; font-size:17px}
+.text-middle-justify, th, td {
+    text-align: center!important;
+    vertical-align: middle!important;
+    font-style:25px!important;
+    font-size: 21px;
+    font-family: Times;
+    font-weight: 500;
+    height: fit-content;
+    height: 21px;
+}
+
+
+/*for simple schedule*/
+.stamp{
+    width: 250px;
+    position: relative;
+    top: -142px;
+    right: 135px;
+    display: inline-block;
+    float: right;
+}
+
+.signature{
+    position: relative;
+    top: -46px;
+    right: 26px;
+
+    display: inline-block;
+    float: right;
+    width: 150px;
+}
+
+.warning-message{color: #e31172}
+
+.draggable-item {
+    cursor: move;
+    -webkit-touch-callout: default; /* iOS Safari */
+    -webkit-user-select: all; /* Safari */
+    -khtml-user-select: all; /* Konqueror HTML */
+    -moz-user-select: all; /* Old versions of Firefox */
+    -ms-user-select: all; /* Internet Explorer/Edge */
+    user-select: all; /* Non-prefixed version, currently
+        /*                          supported by Chrome, Edge, Opera and Firefox *!*/
+}
+
+.icon-delete{display: none}
+.schedule-cell:hover .icon-delete{display: flex; position: absolute; top: 0;right: 8px;font-size: 24px; color:grey; opacity:.3; padding:5px}
+.icon-delete:hover{opacity:1!important;text-decoration:none; color:red!important;}
+.tg-0lax{position:relative}
+
+.simple-table-head table{
+    margin-left: auto;
+    margin-right: 0!important;
+}
+.simple-table-header{text-align:center}
+
+.table td{font-size:16px; height:auto}
+
+.date-col{max-width:60px}
+h4{font-family:Times!important;}
+
+body{
+    /*background-color: #7d7220b5!important;*/
+    background-color: #414e43b5!important;
+}
+
+.white{background-color: white}
+
+.schedule-cell{padding: 10px 0 10px!important}
+
+.table-wrapper{
+    height: 300px;
+    overflow: auto;
+
+}
+
+.settings-block{
+    background-color: #908953;
+    margin-right: 15px;
+    box-sizing: border-box;
+    padding:15px 0 15px;
+}
+
+.schedule-cell{
+    max-width:250px
+}
+
+.normalize-cell{min-height:120px; min-width: 120px;
+line-height:120px;}
+
+
+/* ========================================================
+      1.PIGGY GIF START
+      ======================================================== */
+
+/* ========================================================
+   1. CONTAINER (Set or change your background color here)
+   ======================================================== */
+.piggy-stage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 300px;
+    height: 300px;
+    border-radius: 16px;
+
+    /* Empty / transparent by default.
+       Change this freely with CSS or JS (e.g., #1e293b, #fef3c7, etc.) */
+    background-color: transparent;
+    transition: background-color 0.3s ease;
+}
+
+/* ========================================================
+   2. DEFAULT STATE: Completely invisible and blank
+   ======================================================== */
+.piggy-svg {
+    width: 220px;
+    height: 220px;
+    overflow: visible;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* ========================================================
+   3. ACTIVE STATE: Plays once when triggered
+   ======================================================== */
+.piggy-stage.is-active .piggy-svg {
+    visibility: visible;
+    /* Entire SVG fades in, stays visible, and fades out at the end */
+    animation: svgLifecycle 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.piggy-stage.is-active .coin {
+    transform-origin: center;
+    /* Coin drops into the slot */
+    animation: coinDrop 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.piggy-stage.is-active .pig-body-group {
+    transform-origin: 100px 140px;
+    /* Pig reacts with a squash/bounce upon receiving coin */
+    animation: pigSquash 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.piggy-stage.is-active .tail {
+    transform-origin: 38px 120px;
+    /* Little wiggle */
+    animation: tailWiggle 2s ease-in-out forwards;
+}
+
+/* ========================================================
+   4. KEYFRAME ANIMATIONS (Single-run: 2.0s duration)
+   ======================================================== */
+/* Controls the appear -> stay -> disappear lifecycle */
+@keyframes svgLifecycle {
+    0% {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+    15% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    80% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+}
+
+/* Coin enters, falls into piggy bank slot, disappears inside */
+@keyframes coinDrop {
+    0% {
+        transform: translateY(-90px);
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(18px) scale(0.95);
+        opacity: 1;
+    }
+    58% {
+        transform: translateY(40px) scale(0.2);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(40px) scale(0.2);
+        opacity: 0;
+    }
+}
+
+/* Piggy bank bounce upon coin impact */
+@keyframes pigSquash {
+    0%, 48% {
+        transform: scale(1, 1);
+    }
+    56% {
+        transform: scale(1.06, 0.92); /* Squash down */
+    }
+    66% {
+        transform: scale(0.97, 1.03); /* Rebound */
+    }
+    76%, 100% {
+        transform: scale(1, 1);
+    }
+}
+
+/* Tail wiggle */
+@keyframes tailWiggle {
+    0%, 40% { transform: rotate(0deg); }
+    55% { transform: rotate(-15deg); }
+    70% { transform: rotate(15deg); }
+    85%, 100% { transform: rotate(0deg); }
+}
+
+/* Demo Controls */
+.demo-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+button {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+}
+button:hover {
+    background: #f3f4f6;
+}
+
+/* ========================================================
+      1.PIGGY GIF END
+      ======================================================== */
