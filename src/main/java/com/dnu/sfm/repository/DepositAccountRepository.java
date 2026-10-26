@@ -1,6 +1,6 @@
 package com.dnu.sfm.repository;
 
-
+import com.dnu.sfm.dto.DepositAccountDto;
 import com.dnu.sfm.model.AccountStatus;
 import com.dnu.sfm.model.DepositAccount;
 import jakarta.persistence.LockModeType;
@@ -14,13 +14,49 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
 public interface DepositAccountRepository extends JpaRepository<DepositAccount, Long>, JpaSpecificationExecutor<DepositAccount> {
+
+    /**
+     * Creates and persists a deposit account from its DTO representation.
+     * Fields that are not represented by {@link DepositAccount} (for example,
+     * customerId and compoundingFrequency) are intentionally not mapped.
+     */
+    @Transactional
+    default DepositAccount createAccount(DepositAccountDto depositAccountDto) {
+        Objects.requireNonNull(depositAccountDto, "Deposit account DTO must not be null");
+
+        if (existsByAccountNumber(depositAccountDto.getAccountNumber())) {
+            throw new IllegalArgumentException(
+                    "Account number already exists: " + depositAccountDto.getAccountNumber()
+            );
+        }
+
+        DepositAccount account = new DepositAccount(
+                depositAccountDto.getAccountNumber(),
+                depositAccountDto.getAccountName(),
+                depositAccountDto.getCurrentBalance(),
+                depositAccountDto.getCurrency(),
+                depositAccountDto.getAnnualInterestRate(),
+                depositAccountDto.getStartDate(),
+                depositAccountDto.getMaturityDate(),
+                false,
+                depositAccountDto.getEarlyWithdrawalPenaltyRate()
+        );
+        account.setStatus(depositAccountDto.getStatus());
+        if (depositAccountDto.getAccruedInterest() != null) {
+            account.setAccruedInterest(depositAccountDto.getAccruedInterest());
+        }
+
+        return save(account);
+    }
 
     /**
      * Finds an account by its unique public account number.
