@@ -89,12 +89,12 @@ public interface DepositAccountRepository extends JpaRepository<DepositAccount, 
     /**
      * Retrieves all accounts associated with a specific user, paginated.
      */
-    Page<DepositAccount> findByUserId(Long userId, Pageable pageable);
+//    Page<DepositAccount> findByUserId(Long userId, Pageable pageable);
 
     /**
      * Retrieves accounts associated with a specific user filtered by status.
      */
-    List<DepositAccount> findByUserIdAndStatus(Long userId, AccountStatus status);
+//    List<DepositAccount> findByUserIdAndStatus(Long userId, AccountStatus status);
 
     /**
      * Finds active accounts due for maturity processing up to a specific cutoff date.
@@ -120,5 +120,5 @@ public interface DepositAccountRepository extends JpaRepository<DepositAccount, 
     /**
      * Counts active accounts owned by a specific user (enforcing account quota limits).
      */
-    long countByUserIdAndStatus(Long userId, AccountStatus status);
+//    long countByUserIdAndStatus(Long userId, AccountStatus status);
 }

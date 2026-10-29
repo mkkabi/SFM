@@ -3,11 +3,16 @@ package com.dnu.sfm.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "deposit_accounts")
 public class DepositAccount extends Account {
@@ -160,53 +165,5 @@ public class DepositAccount extends Account {
         return Math.max(0, days);
     }
 
-    // --- Getters & Setters ---
 
-    public BigDecimal getInterestRate() {
-        return interestRate;
-    }
-
-    public void setInterestRate(BigDecimal interestRate) {
-        this.interestRate = interestRate;
-    }
-
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-
-    public LocalDate getMaturityDate() {
-        return maturityDate;
-    }
-
-    public void setMaturityDate(LocalDate maturityDate) {
-        this.maturityDate = maturityDate;
-    }
-
-    public BigDecimal getAccruedInterest() {
-        return accruedInterest;
-    }
-
-    public void setAccruedInterest(BigDecimal accruedInterest) {
-        this.accruedInterest = accruedInterest;
-    }
-
-    public boolean isEarlyWithdrawalAllowed() {
-        return earlyWithdrawalAllowed;
-    }
-
-    public void setEarlyWithdrawalAllowed(boolean earlyWithdrawalAllowed) {
-        this.earlyWithdrawalAllowed = earlyWithdrawalAllowed;
-    }
-
-    public BigDecimal getPenaltyRate() {
-        return penaltyRate;
-    }
-
-    public void setPenaltyRate(BigDecimal penaltyRate) {
-        this.penaltyRate = penaltyRate;
-    }
 }

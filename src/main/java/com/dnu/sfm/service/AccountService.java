@@ -10,6 +10,8 @@ public interface AccountService {
 
     Account getAccountByNumber(String accountNumber);
 
+    Account findById(Long id);
+
     List<Account> getAllAccounts();
 
     void deposit(String accountNumber, BigDecimal amount);
