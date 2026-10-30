@@ -4,10 +4,12 @@ import com.dnu.sfm.dto.AccountDto;
 import com.dnu.sfm.model.AccountStatus;
 import com.dnu.sfm.model.CashAccount;
 import com.dnu.sfm.model.Currency;
+import com.dnu.sfm.model.TransactionType;
 import com.dnu.sfm.exception.AccountNotFoundException;
 import com.dnu.sfm.exception.InactiveAccountException;
 import com.dnu.sfm.repository.AccountRepository;
 import com.dnu.sfm.service.CashAccountService;
+import com.dnu.sfm.service.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,7 @@ import java.util.Objects;
 public class CashAccountServiceImpl implements CashAccountService {
 
     private final AccountRepository accountRepository;
+    private final TransactionService transactionService;
 
 
     @Override
@@ -66,6 +69,9 @@ public class CashAccountServiceImpl implements CashAccountService {
         account.setBalance(account.getBalance().add(amount));
         CashAccount savedAccount = accountRepository.save(account);
 
+        // Track the transaction so the account history stays complete
+        transactionService.recordTransaction(savedAccount, TransactionType.DEPOSIT, amount);
+
         log.info("Deposited {} {} to cash account id={} (new balance: {})",
                 amount, savedAccount.getCurrency(), id, savedAccount.getBalance());
 
@@ -86,6 +92,9 @@ public class CashAccountServiceImpl implements CashAccountService {
 
         account.setBalance(account.getBalance().subtract(amount));
         CashAccount savedAccount = accountRepository.save(account);
+
+        // Track the transaction so the account history stays complete
+        transactionService.recordTransaction(savedAccount, TransactionType.WITHDRAWAL, amount);
 
         log.info("Withdrew {} {} from cash account id={} (new balance: {})",
                 amount, savedAccount.getCurrency(), id, savedAccount.getBalance());

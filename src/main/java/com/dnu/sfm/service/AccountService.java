@@ -8,4 +8,11 @@ public interface AccountService {
 
     List<Account> getAllAccounts();
 
+    /**
+     * Fetches a single account by its identifier.
+     *
+     * @throws com.dnu.sfm.exception.AccountNotFoundException if no account exists for the id
+     */
+    Account getAccountById(Long id);
+
 }

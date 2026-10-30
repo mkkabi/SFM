@@ -4,12 +4,14 @@ import com.dnu.sfm.dto.AccountDto;
 import com.dnu.sfm.dto.DepositAccountDto;
 import com.dnu.sfm.model.AccountStatus;
 import com.dnu.sfm.model.DepositAccount;
+import com.dnu.sfm.model.TransactionType;
 import com.dnu.sfm.exception.AccountNotFoundException;
 import com.dnu.sfm.exception.InactiveAccountException;
 import com.dnu.sfm.exception.MaturityNotReachedException;
 import com.dnu.sfm.repository.AccountRepository;
 import com.dnu.sfm.repository.DepositAccountRepository;
 import com.dnu.sfm.service.DepositAccountService;
+import com.dnu.sfm.service.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +42,7 @@ public class DepositAccountServiceImpl implements DepositAccountService {
 
     private final AccountRepository accountRepository;
     private final DepositAccountRepository depositAccountRepository;
+    private final TransactionService transactionService;
 
 
 
@@ -72,6 +75,9 @@ public class DepositAccountServiceImpl implements DepositAccountService {
         account.setBalance(account.getBalance().add(amount));
         DepositAccount savedAccount = depositAccountRepository.save(account);
 
+        // Track the transaction so the account history stays complete
+        transactionService.recordTransaction(savedAccount, TransactionType.DEPOSIT, amount);
+
         log.info("Deposited {} {} to deposit account id={} (new balance: {})",
                 amount, savedAccount.getCurrency(), id, savedAccount.getBalance());
 
@@ -101,6 +107,9 @@ public class DepositAccountServiceImpl implements DepositAccountService {
         account.setBalance(account.getBalance().subtract(amount));
         DepositAccount savedAccount = depositAccountRepository.save(account);
 
+        // Track the transaction so the account history stays complete
+        transactionService.recordTransaction(savedAccount, TransactionType.WITHDRAWAL, amount);
+
         log.info("Withdrew {} {} from deposit account id={} on maturity date (new balance: {})",
                 amount, savedAccount.getCurrency(), id, savedAccount.getBalance());
 
@@ -119,7 +128,8 @@ public class DepositAccountServiceImpl implements DepositAccountService {
                             + ") must be positive");
         }
 
-        // new maturityDate = maturityDate + (maturityDate - startDate), i.e. the term is doubled
+        // new maturityDate = maturityDate + (maturityDate - startDate), i.e. the term is doubled.
+        // Not a money movement - the balance does not change, so no Transaction is recorded.
         LocalDate newMaturityDate = account.getMaturityDate().plusDays(termDays);
         account.setMaturityDate(newMaturityDate);
         DepositAccount savedAccount = depositAccountRepository.save(account);
