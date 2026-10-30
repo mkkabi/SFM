@@ -12,9 +12,13 @@
     <div class="row justify-content-center">
         <div class="col-lg-10 col-md-11">
 
-            <!-- Flash message set by CashAccountController after successful creation -->
+            <!-- Flash messages set by the account controllers after successful creation / update -->
             <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}">Success</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${warningMessage}" class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-circle-fill me-2"></i><span th:text="${warningMessage}">Warning</span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
 
@@ -54,6 +58,7 @@
                             <th scope="col">Type</th>
                             <th scope="col" class="text-end">Balance</th>
                             <th scope="col" class="text-center">Status</th>
+                            <th scope="col" class="text-center">Actions</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -72,6 +77,18 @@
                                 <span th:if="${account.status.name() == 'ACTIVE'}" class="badge text-bg-success">Active</span>
                                 <span th:if="${account.status.name() == 'FROZEN'}" class="badge text-bg-warning">Frozen</span>
                                 <span th:if="${account.status.name() == 'CLOSED'}" class="badge text-bg-secondary">Closed</span>
+                            </td>
+                            <td class="text-center">
+                                <a th:if="${account instanceof T(com.dnu.sfm.model.DepositAccount)}"
+                                   th:href="@{/deposit-accounts/{id}/update(id=${account.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-gear me-1"></i> Manage
+                                </a>
+                                <a th:unless="${account instanceof T(com.dnu.sfm.model.DepositAccount)}"
+                                   th:href="@{/cash-accounts/{id}/update(id=${account.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-gear me-1"></i> Manage
+                                </a>
                             </td>
                         </tr>
                         </tbody>
