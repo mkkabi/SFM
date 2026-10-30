@@ -2,6 +2,7 @@ package com.dnu.sfm.dto;
 
 import com.dnu.sfm.model.Currency;
 import com.dnu.sfm.model.DepositAccount;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
@@ -47,17 +48,6 @@ public record DepositAccountDto(
 ) {
 
     /**
-     * Compact Constructor.
-     * In a record, this constructor runs automatically during instantiation.
-     * It allows validating invariants without having to re-declare the parameter list.
-     */
-    public DepositAccountDto {
-        if (startDate != null && maturityDate != null && !maturityDate.isAfter(startDate)) {
-            throw new IllegalArgumentException("Maturity date must be strictly after the start date.");
-        }
-    }
-
-    /**
      * No-args overloaded constructor.
      * Enables initializing an empty instance (e.g. for Spring/Thymeleaf form binding: new DepositAccountDto()).
      */
@@ -72,6 +62,17 @@ public record DepositAccountDto(
                 LocalDate.now().plusYears(1),
                 BigDecimal.ZERO
         );
+    }
+
+    /**
+     * Cross-field validation: the maturity date must fall strictly after the start date.
+     * Declared as a Bean Validation constraint (instead of throwing from the compact
+     * constructor) so that Spring MVC can report it as a form error and re-render
+     * the form with the user's input preserved.
+     */
+    @AssertTrue(message = "Maturity date must be strictly after the start date.")
+    public boolean isDateRangeValid() {
+        return startDate == null || maturityDate == null || maturityDate.isAfter(startDate);
     }
 
     /**

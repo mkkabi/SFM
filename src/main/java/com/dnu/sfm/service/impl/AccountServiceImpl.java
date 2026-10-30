@@ -1,6 +1,7 @@
 package com.dnu.sfm.service.impl;
 
 import com.dnu.sfm.model.Account;
+import com.dnu.sfm.repository.AccountRepository;
 import com.dnu.sfm.service.AccountService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +13,11 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 public class AccountServiceImpl implements AccountService {
+
+    private final AccountRepository accountRepository;
+
     @Override
     public List<Account> getAllAccounts() {
-        return List.of();
+        return accountRepository.findAll();
     }
 }

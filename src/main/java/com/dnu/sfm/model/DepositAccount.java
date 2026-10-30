@@ -22,12 +22,6 @@ public class DepositAccount extends Account {
     private BigDecimal interestRate;
 
     /**
-     * Opening date of the deposit term.
-     */
-    @Column(nullable = false)
-    private LocalDate startDate;
-
-    /**
      * Maturity date when the principal and interest become unlocked.
      */
     @Column(nullable = false)
@@ -62,7 +56,8 @@ public class DepositAccount extends Account {
         }
 
         this.interestRate = interestRate;
-        this.startDate = startDate;
+        // startDate is inherited from Account and persisted in the parent "accounts" table
+        setStartDate(startDate);
         this.maturityDate = maturityDate;
 
     }

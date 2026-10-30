@@ -36,7 +36,14 @@ public class DepositAccountServiceImpl implements DepositAccountService {
 
     @Override
     public DepositAccount createDepositAccount(DepositAccountDto depositAccountDto) {
-        return depositAccountRepository.createAccount(depositAccountDto);
+        DepositAccount savedAccount = depositAccountRepository.createAccount(depositAccountDto);
+
+        log.info("Created new deposit account: id={}, name='{}', balance={} {}, interestRate={}%, maturity={}",
+                savedAccount.getId(), savedAccount.getName(),
+                savedAccount.getBalance(), savedAccount.getCurrency(),
+                savedAccount.getInterestRate(), savedAccount.getMaturityDate());
+
+        return savedAccount;
     }
 
 }

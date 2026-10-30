@@ -7,9 +7,8 @@
     <title th:text="${title}"></title>
 
     <!--    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>-->
-<!--    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>-->
+    <!--    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>-->
 
-    <!-- Optional theme -->
     <link rel="stylesheet" th:href="@{/css/main.css}" type="text/css">
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" type="text/css">
     <link rel="stylesheet" th:href="@{/css/bootstrap-icons.css}"  type="text/css">
@@ -24,7 +23,7 @@
 
 
         <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: rgb(53 113 201)">
-<!--        <nav class="navbar navbar-expand-lg bg-light">-->
+
             <div class="container-fluid">
                 <a class="navbar-brand" th:href="@{/}">
                     <img th:src="@{/images/logo.png}"/>
@@ -51,7 +50,8 @@
 
                             <ul class="dropdown-menu" >
                                 <li><a th:href="@{/accounts}" class="dropdown-item" >All Accounts</a></li>
-                                <li><a th:href="@{/deposit-accounts/new}" class="dropdown-item" >Add Account</a></li>
+                                <li><a th:href="@{/cash-accounts/new}" class="dropdown-item" >Add Cash Account</a></li>
+                                <li><a th:href="@{/deposit-accounts/new}" class="dropdown-item" >Add Deposit Account</a></li>
                             </ul>
 
                         </li>
@@ -60,82 +60,9 @@
                             <a class="nav-link disabled">Disabled</a>
                         </li>
                     </ul>
-<!--                    <form class="d-flex" role="search">-->
-<!--                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">-->
-<!--                        <button class="btn btn-outline-success" type="submit">Search</button>-->
-<!--                    </form>-->
                 </div>
             </div>
         </nav>
-
-
-
-
-
-
-
-
-<!--        <nav >-->
-<!--            <div class="container-fluid">-->
-
-<!--            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">-->
-<!--                    <span class="navbar-toggler-icon"></span>-->
-<!--                </button>-->
-<!--            <div class="collapse navbar-collapse" id="navbarText">-->
-<!--                <ul class="navbar-nav nav">-->
-
-<!--                    <li class="nav-item">-->
-<!--                        <a class="nav-link" th:href="@{/}">Home</a>-->
-<!--                    </li>-->
-
-<!--                    <li class="nav-item dropdown">-->
-<!--                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Disciplines</a>-->
-<!--                        <div class="dropdown-menu">-->
-<!--                            <a class="dropdown-item" th:href="@{/disciplines/all}">All Disciplines</a>-->
-<!--                            <div class="dropdown-divider"></div>-->
-<!--                            <a th:href="@{/disciplines/create}" class="dropdown-item">Add New</a>-->
-<!--                        </div>-->
-<!--                    </li>-->
-
-<!--                    <li class="nav-item dropdown">-->
-<!--                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Teachers</a>-->
-<!--                        <div class="dropdown-menu">-->
-<!--                            <a class="dropdown-item" th:href="@{/teachers/all}">All Teachers</a>-->
-<!--                            <div class="dropdown-divider"></div>-->
-<!--                            <a th:href="@{/teachers/create}" class="dropdown-item">Add New</a>-->
-<!--                        </div>-->
-<!--                    </li>-->
-
-<!--                    <li class="nav-item dropdown">-->
-<!--                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Groups</a>-->
-<!--                        <div class="dropdown-menu">-->
-<!--                            <a class="dropdown-item" th:href="@{/groups/all}">All Groups</a>-->
-<!--                            <div class="dropdown-divider"></div>-->
-<!--                            <a th:href="@{/groups/create}" class="dropdown-item">Add New</a>-->
-<!--                        </div>-->
-<!--                    </li>-->
-
-<!--&lt;!&ndash;                    <li class="nav-item dropdown">&ndash;&gt;-->
-<!--&lt;!&ndash;                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Lessons</a>&ndash;&gt;-->
-<!--&lt;!&ndash;                        <div class="dropdown-menu">&ndash;&gt;-->
-<!--&lt;!&ndash;                            <a class="dropdown-item" th:href="@{/lessons/all}">All Lessons</a>&ndash;&gt;-->
-<!--&lt;!&ndash;                            <div class="dropdown-divider"></div>&ndash;&gt;-->
-<!--&lt;!&ndash;&lt;!&ndash;                            <a th:href="@{/lessons/create}" class="dropdown-item">Add New</a>&ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;                        </div>&ndash;&gt;-->
-<!--&lt;!&ndash;                    </li>&ndash;&gt;-->
-
-<!--                    <li class="nav-item">-->
-<!--                        <a class="nav-link" th:href="@{/settings/all}">Settings</a>-->
-<!--                    </li>-->
-
-<!--                </ul>-->
-<!--            </div>-->
-<!--            </div>-->
-
-<!--        </nav>-->
-
-
-
 
         <br>
         <br>
@@ -148,11 +75,9 @@
 
 
     <footer th:fragment="footer" class="text-center text-white">
-        <!-- Copyright -->
         <div class="text-center p-3">
             © 2026 Copyright: SFM
         </div>
-        <!-- Copyright -->
     </footer>
 
 </div>

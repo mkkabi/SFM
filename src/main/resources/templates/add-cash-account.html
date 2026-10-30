@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{elements.html :: head('Add Cash Account')}">
+</head>
+
+<body>
+<div th:replace="~{elements.html :: navbar}"></div>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+
+      <!-- Navigation / Back link -->
+      <div class="mb-3">
+        <a th:href="@{/accounts}" class="text-decoration-none text-muted">
+          <i class="bi bi-arrow-left"></i> Back to Accounts
+        </a>
+      </div>
+
+      <div class="card card-custom p-4 p-md-5">
+        <div class="d-flex align-items-center mb-4">
+          <div class="bg-primary text-white rounded-3 p-3 me-3">
+            <i class="bi bi-cash-coin fs-3"></i>
+          </div>
+          <div>
+            <h3 class="mb-1 fw-bold">Create New Cash Account</h3>
+            <p class="text-muted mb-0">Track physical cash or a wallet balance in your chosen currency.</p>
+          </div>
+        </div>
+
+        <!-- Form bound to the AccountDto form-backing object -->
+        <form th:action="@{/cash-accounts/new}" th:object="${account}" method="post" novalidate>
+
+          <!-- Global validation error alert (inside form context) -->
+          <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">Validation error</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+
+          <div class="row g-3">
+            <!-- Account Name -->
+            <div class="col-md-6">
+              <label for="accountName" class="form-label">Account Name <span class="text-danger">*</span></label>
+              <input type="text"
+                     id="accountName"
+                     th:field="*{name}"
+                     class="form-control"
+                     th:errorclass="is-invalid"
+                     placeholder="e.g. Wallet, Pocket Cash">
+              <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+                Please provide an account name.
+              </div>
+            </div>
+
+            <!-- Currency -->
+            <div class="col-md-6">
+              <label for="currency" class="form-label">Currency <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-globe2"></i></span>
+                <select id="currency"
+                        th:field="*{currency}"
+                        class="form-select"
+                        th:errorclass="is-invalid">
+                  <option th:each="c : ${T(com.dnu.sfm.model.Currency).values()}"
+                          th:value="${c}"
+                          th:text="${c}">USD</option>
+                </select>
+              </div>
+              <div class="invalid-feedback" th:if="${#fields.hasErrors('currency')}" th:errors="*{currency}">
+                Please choose a currency.
+              </div>
+            </div>
+
+            <!-- Opening Balance -->
+            <div class="col-md-6">
+              <label for="initialBalance" class="form-label">Opening Balance <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-cash-stack"></i></span>
+                <input type="number"
+                       step="0.01"
+                       min="0"
+                       id="initialBalance"
+                       th:field="*{balance}"
+                       class="form-control"
+                       th:errorclass="is-invalid"
+                       placeholder="0.00">
+              </div>
+              <div class="invalid-feedback" th:if="${#fields.hasErrors('balance')}" th:errors="*{balance}">
+                Please specify a valid starting balance.
+              </div>
+            </div>
+
+            <!-- Account Status -->
+            <div class="col-md-6">
+              <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-activity"></i></span>
+                <select id="status"
+                        th:field="*{status}"
+                        class="form-select"
+                        th:errorclass="is-invalid">
+                  <option th:each="s : ${T(com.dnu.sfm.model.AccountStatus).values()}"
+                          th:value="${s}"
+                          th:text="${s}">ACTIVE</option>
+                </select>
+              </div>
+              <div class="invalid-feedback" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">
+                Please choose an account status.
+              </div>
+            </div>
+
+            <!-- Start Date -->
+            <div class="col-md-6">
+              <label for="startDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                <input type="date"
+                       id="startDate"
+                       th:field="*{startDate}"
+                       class="form-control"
+                       th:errorclass="is-invalid">
+              </div>
+              <div class="invalid-feedback" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}">
+                Please specify the opening date.
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Actions -->
+          <div class="d-flex justify-content-end gap-2">
+            <a th:href="@{/accounts}" class="btn btn-outline-secondary px-4">Cancel</a>
+            <button type="submit" class="btn btn-primary px-4 fw-semibold">
+              <i class="bi bi-check2-circle me-1"></i> Save Cash Account
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer th:replace="elements.html :: footer"></footer>
+
+</body>
+</html>

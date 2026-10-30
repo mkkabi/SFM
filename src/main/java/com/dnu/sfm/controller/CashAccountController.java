@@ -17,7 +17,7 @@ public class CashAccountController {
 
     private final CashAccountService cashAccountService;
 
-    // Spring will automatically inject AccountService here
+    // Spring will automatically inject CashAccountService here
     public CashAccountController(CashAccountService cashAccountService) {
         this.cashAccountService = cashAccountService;
     }
@@ -36,7 +36,8 @@ public class CashAccountController {
             RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
-            return "add-cash-account"; // or "accounts/add-account"
+            // Re-renders the form with the submitted values and field errors
+            return "add-cash-account";
         }
 
         cashAccountService.createCashAccount(accountDto);

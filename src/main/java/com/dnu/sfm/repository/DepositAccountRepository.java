@@ -17,7 +17,7 @@ public interface DepositAccountRepository extends JpaRepository<DepositAccount, 
     default DepositAccount createAccount(DepositAccountDto depositAccountDto) {
         Objects.requireNonNull(depositAccountDto, "Deposit account DTO must not be null");
 
-        return null;
+        return save(depositAccountDto.toEntity());
     }
 
 
