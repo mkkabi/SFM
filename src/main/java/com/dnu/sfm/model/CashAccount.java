@@ -9,12 +9,8 @@ import java.math.BigDecimal;
 @Table(name = "cash_accounts")
 public class CashAccount extends Account {
 
-
-
     public CashAccount() {
         super();
     }
-
-
 
 }

@@ -13,15 +13,5 @@ import java.util.Optional;
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
-    Optional<Account> findByAccountNumber(String accountNumber);
 
-    boolean existsByAccountNumber(String accountNumber);
-
-    /**
-     * SELECT ... FOR UPDATE ensures no concurrent transactions
-     * read/modify the balance simultaneously (double-spending protection).
-     */
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT a FROM Account a WHERE a.accountNumber = :accountNumber")
-    Optional<Account> findByAccountNumberForUpdate(@Param("accountNumber") String accountNumber);
 }

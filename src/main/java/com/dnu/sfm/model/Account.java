@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Setter
 @Getter
@@ -17,9 +18,6 @@ public abstract class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String accountNumber;
-
     @Column(nullable = false)
     private String name;
 
@@ -27,39 +25,25 @@ public abstract class Account {
     private BigDecimal balance = BigDecimal.ZERO;
 
     @Column(nullable = false, length = 3)
-    private String currency = "USD";
+    private Currency currency = Currency.USD;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AccountStatus status = AccountStatus.ACTIVE;
 
+    /**
+     * Opening date of the account.
+     */
+    @Column(nullable = false)
+    private LocalDate startDate;
+
     public Account() {
     }
 
-    public Account(String accountNumber, String name, BigDecimal balance, String currency) {
-        this.accountNumber = accountNumber;
+    public Account(String name, BigDecimal balance, Currency currency) {
         this.name = name;
         this.balance = balance != null ? balance : BigDecimal.ZERO;
-        this.currency = currency != null ? currency : "USD";
+        this.currency = currency != null ? currency : Currency.USD;
     }
-
-
-    public void credit(BigDecimal amount) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Credit amount must be positive");
-        }
-        this.balance = this.balance.add(amount);
-    }
-
-    public void debit(BigDecimal amount) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Debit amount must be positive");
-        }
-        if (this.balance.compareTo(amount) < 0) {
-            throw new IllegalArgumentException("Insufficient funds");
-        }
-        this.balance = this.balance.subtract(amount);
-    }
-
 
 }

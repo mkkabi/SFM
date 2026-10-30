@@ -1,82 +1,113 @@
 package com.dnu.sfm.dto;
 
-
-
-import com.dnu.sfm.model.AccountStatus;
-import com.dnu.sfm.model.CompoundingFrequency;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.dnu.sfm.model.Currency;
+import com.dnu.sfm.model.DepositAccount;
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.UUID;
 
-import lombok.*;
+/**
+ * Data Transfer Object representing a Deposit Account.
+ * Implemented as an immutable Java record.
+ */
+public record DepositAccountDto(
+        Long id,
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class DepositAccountDto {
+        @NotBlank(message = "Account name is mandatory")
+        @Size(min = 2, max = 100, message = "Account name must be between 2 and 100 characters")
+        String name,
 
-    private UUID id;
+        @NotNull(message = "Balance / initial deposit is required")
+        @DecimalMin(value = "0.00", message = "Balance cannot be negative")
+        @Digits(integer = 15, fraction = 2, message = "Invalid monetary amount precision (max 2 decimal places)")
+        BigDecimal balance,
 
-    @NotNull(message = "Customer ID is required")
-    private UUID customerId;
+        @NotNull(message = "Currency is required")
+        Currency currency,
 
-    @NotBlank(message = "Account number is required")
-    private String accountNumber;
+        @NotNull(message = "Interest rate is required")
+        @DecimalMin(value = "0.0000", message = "Interest rate cannot be negative")
+        @DecimalMax(value = "100.0000", message = "Interest rate cannot exceed 100%")
+        @Digits(integer = 3, fraction = 4, message = "Interest rate format invalid (max 3 integer digits, 4 decimals)")
+        BigDecimal interestRate,
 
-    @NotBlank(message = "Account name is required")
-    private String accountName;
+        @NotNull(message = "Start date is required")
+        LocalDate startDate,
 
-    @NotNull(message = "Currency code is required")
-    @Pattern(regexp = "^[A-Z]{3}$", message = "Currency must adhere to ISO 4217 standard")
-    private String currency;
+        @NotNull(message = "Maturity date is required")
+        LocalDate maturityDate,
 
-    @NotNull(message = "Principal amount is required")
-    @DecimalMin(value = "0.00", inclusive = false)
-    @Digits(integer = 15, fraction = 2)
-    private BigDecimal principalAmount;
+        BigDecimal accruedInterest
+) {
 
-    @NotNull(message = "Current balance is required")
-    @DecimalMin(value = "0.00")
-    @Digits(integer = 15, fraction = 2)
-    private BigDecimal currentBalance;
+    /**
+     * Compact Constructor.
+     * In a record, this constructor runs automatically during instantiation.
+     * It allows validating invariants without having to re-declare the parameter list.
+     */
+    public DepositAccountDto {
+        if (startDate != null && maturityDate != null && !maturityDate.isAfter(startDate)) {
+            throw new IllegalArgumentException("Maturity date must be strictly after the start date.");
+        }
+    }
 
-    @NotNull(message = "Interest rate is required")
-    @Digits(integer = 3, fraction = 4)
-    private BigDecimal annualInterestRate;
+    /**
+     * No-args overloaded constructor.
+     * Enables initializing an empty instance (e.g. for Spring/Thymeleaf form binding: new DepositAccountDto()).
+     */
+    public DepositAccountDto() {
+        this(
+                null,
+                "",
+                BigDecimal.ZERO,
+                null,
+                BigDecimal.ZERO,
+                LocalDate.now(),
+                LocalDate.now().plusYears(1),
+                BigDecimal.ZERO
+        );
+    }
 
-    @NotNull(message = "Compounding frequency is required")
-    private CompoundingFrequency compoundingFrequency;
+    /**
+     * Converts a JPA entity to this DTO.
+     */
+    public static DepositAccountDto fromEntity(DepositAccount account) {
+        if (account == null) {
+            return null;
+        }
+        return new DepositAccountDto(
+                account.getId(),
+                account.getName(),
+                account.getBalance(),
+                account.getCurrency(),
+                account.getInterestRate(),
+                account.getStartDate(),
+                account.getMaturityDate(),
+                account.getAccruedInterest()
+        );
+    }
 
-    @NotNull(message = "Term duration is required")
-    @Positive
-    private Integer termMonths;
-
-    @NotNull(message = "Start date is required")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private LocalDate startDate;
-
-    @NotNull(message = "Maturity date is required")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private LocalDate maturityDate;
-
-    @NotNull(message = "Account status is required")
-    private AccountStatus status;
-
-    @Digits(integer = 15, fraction = 2)
-    private BigDecimal accruedInterest;
-
-    @Digits(integer = 3, fraction = 4)
-    private BigDecimal earlyWithdrawalPenaltyRate;
-
-    private boolean autoRenewal;
+    /**
+     * Converts this DTO back to a JPA DepositAccount entity.
+     */
+    public DepositAccount toEntity() {
+        DepositAccount account = new DepositAccount(
+                this.name(),
+                this.balance(),
+                this.currency(),
+                this.interestRate(),
+                this.startDate(),
+                this.maturityDate()
+        );
+        if (this.accruedInterest() != null) {
+            account.setAccruedInterest(this.accruedInterest());
+        }
+        return account;
+    }
 }
