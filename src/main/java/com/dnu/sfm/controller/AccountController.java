@@ -3,7 +3,6 @@ package com.dnu.sfm.controller;
 
 import com.dnu.sfm.model.Account;
 import com.dnu.sfm.service.AccountService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +14,6 @@ import java.util.List;
 @RequestMapping("/accounts")
 public class AccountController {
 
-    @Autowired
     private final AccountService accountService;
 
     // Spring will automatically inject AccountService here

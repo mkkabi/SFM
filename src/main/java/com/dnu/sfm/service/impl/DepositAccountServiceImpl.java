@@ -2,7 +2,6 @@ package com.dnu.sfm.service.impl;
 
 import com.dnu.sfm.dto.AccountDto;
 import com.dnu.sfm.dto.DepositAccountDto;
-import com.dnu.sfm.exception.AccountNotFoundException;
 import com.dnu.sfm.model.DepositAccount;
 import com.dnu.sfm.repository.AccountRepository;
 import com.dnu.sfm.repository.DepositAccountRepository;
@@ -11,11 +10,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Objects;
-import java.util.UUID;
 
 @Slf4j
 @Service

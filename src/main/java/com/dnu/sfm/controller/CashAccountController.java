@@ -2,28 +2,19 @@ package com.dnu.sfm.controller;
 
 
 import com.dnu.sfm.dto.AccountDto;
-import com.dnu.sfm.dto.AccountDto;
-import com.dnu.sfm.model.AccountType;
-import com.dnu.sfm.model.Currency;
 import com.dnu.sfm.service.CashAccountService;
-import com.dnu.sfm.service.DepositAccountService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
 @Controller
 @RequestMapping("/cash-accounts")
 
 public class CashAccountController {
-    @Autowired
+
     private final CashAccountService cashAccountService;
 
     // Spring will automatically inject AccountService here

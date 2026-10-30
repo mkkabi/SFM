@@ -1,6 +1,5 @@
 package com.dnu.sfm.service;
 
-import com.dnu.sfm.dto.AccountDto;
 import com.dnu.sfm.dto.DepositAccountDto;
 import com.dnu.sfm.model.DepositAccount;
 
