@@ -48,7 +48,19 @@ public class DepositAccountServiceImpl implements DepositAccountService {
 
     @Override
     public DepositAccount createDepositAccount(DepositAccountDto depositAccountDto) {
+        Objects.requireNonNull(depositAccountDto, "Deposit account DTO must not be null");
+
+        // 1. Persist the deposit account entity
         DepositAccount savedAccount = depositAccountRepository.createAccount(depositAccountDto);
+
+        // 2. If an opening balance was provided, record it as the initial DEPOSIT transaction
+        if (savedAccount.getBalance() != null && savedAccount.getBalance().compareTo(BigDecimal.ZERO) > 0) {
+            transactionService.recordTransaction(
+                    savedAccount,
+                    TransactionType.DEPOSIT,
+                    savedAccount.getBalance()
+            );
+        }
 
         log.info("Created new deposit account: id={}, name='{}', balance={} {}, interestRate={}%, maturity={}",
                 savedAccount.getId(), savedAccount.getName(),

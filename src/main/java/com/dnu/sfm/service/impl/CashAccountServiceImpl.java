@@ -33,7 +33,6 @@ public class CashAccountServiceImpl implements CashAccountService {
     public CashAccount createCashAccount(AccountDto accountDto) {
         Objects.requireNonNull(accountDto, "Account DTO must not be null");
 
-        // Map the validated DTO onto a new CashAccount entity
         CashAccount account = new CashAccount();
         account.setName(accountDto.name());
         account.setBalance(accountDto.balance() != null ? accountDto.balance() : BigDecimal.ZERO);
@@ -43,9 +42,14 @@ public class CashAccountServiceImpl implements CashAccountService {
 
         CashAccount savedAccount = accountRepository.save(account);
 
-        log.info("Created new cash account: id={}, name='{}', balance={} {}",
-                savedAccount.getId(), savedAccount.getName(),
-                savedAccount.getBalance(), savedAccount.getCurrency());
+        // If an initial deposit was provided, record it as the first transaction
+        if (savedAccount.getBalance().compareTo(BigDecimal.ZERO) > 0) {
+            transactionService.recordTransaction(
+                    savedAccount,
+                    TransactionType.DEPOSIT,
+                    savedAccount.getBalance()
+            );
+        }
 
         return savedAccount;
     }
