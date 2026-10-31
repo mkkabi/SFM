@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface ExchangeRateService {
 
-    public List<ExchangeRate> parseRates(String jsonPayload);
+    List<ExchangeRate> parseRates(String jsonPayload);
 
 }
