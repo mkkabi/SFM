@@ -38,6 +38,12 @@ public record DepositAccountDto(
         @Digits(integer = 3, fraction = 4, message = "Interest rate format invalid (max 3 integer digits, 4 decimals)")
         BigDecimal interestRate,
 
+        @NotNull(message = "Tax rate is required")
+        @DecimalMin(value = "0.0000", message = "Tax rate cannot be negative")
+        @DecimalMax(value = "100.0000", message = "Tax rate cannot exceed 100%")
+        @Digits(integer = 3, fraction = 4, message = "Tax rate format invalid (max 3 integer digits, 4 decimals)")
+        BigDecimal taxRate,
+
         @NotNull(message = "Start date is required")
         LocalDate startDate,
 
@@ -58,6 +64,7 @@ public record DepositAccountDto(
                 BigDecimal.ZERO,
                 null,
                 BigDecimal.ZERO,
+                new BigDecimal("5.0000"), // Default TAX to 5.00%
                 LocalDate.now(),
                 LocalDate.now().plusYears(1),
                 BigDecimal.ZERO
@@ -88,21 +95,20 @@ public record DepositAccountDto(
                 account.getBalance(),
                 account.getCurrency(),
                 account.getInterestRate(),
+                account.getTaxRate(),
                 account.getStartDate(),
                 account.getMaturityDate(),
                 account.getAccruedInterest()
         );
     }
 
-    /**
-     * Converts this DTO back to a JPA DepositAccount entity.
-     */
     public DepositAccount toEntity() {
         DepositAccount account = new DepositAccount(
                 this.name(),
                 this.balance(),
                 this.currency(),
                 this.interestRate(),
+                this.taxRate(),
                 this.startDate(),
                 this.maturityDate()
         );

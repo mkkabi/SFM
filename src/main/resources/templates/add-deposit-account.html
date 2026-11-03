@@ -111,6 +111,20 @@
               </div>
             </div>
 
+            <div class="form-group mb-3">
+              <label for="taxRate" class="form-label">Tax on Interest (%)</label>
+              <input type="number"
+                     step="0.01"
+                     min="0.00"
+                     max="100.00"
+                     id="taxRate"
+                     th:field="*{taxRate}"
+                     class="form-control"
+                     placeholder="e.g. 5.00"
+                     required />
+              <div class="text-danger" th:if="${#fields.hasErrors('taxRate')}" th:errors="*{taxRate}"></div>
+            </div>
+
             <!-- Start Date -->
             <div class="col-md-6">
               <label for="startDate" class="form-label">Start Date <span class="text-danger">*</span></label>

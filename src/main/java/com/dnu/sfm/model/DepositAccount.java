@@ -22,6 +22,12 @@ public class DepositAccount extends Account {
     private BigDecimal interestRate;
 
     /**
+     * Withholding tax rate as a percentage on earned interest (e.g., 5.0000 for 5%).
+     */
+    @Column(nullable = false, precision = 7, scale = 4)
+    private BigDecimal taxRate = BigDecimal.ZERO;
+
+    /**
      * Maturity date when the principal and interest become unlocked.
      */
     @Column(nullable = false)
@@ -43,6 +49,7 @@ public class DepositAccount extends Account {
             BigDecimal initialDeposit,
             Currency currency,
             BigDecimal interestRate,
+            BigDecimal taxRate,
             LocalDate startDate,
             LocalDate maturityDate
     ) {
@@ -54,12 +61,14 @@ public class DepositAccount extends Account {
         if (interestRate == null || interestRate.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Interest rate cannot be negative.");
         }
+        if (taxRate == null || taxRate.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Tax rate cannot be negative.");
+        }
 
         this.interestRate = interestRate;
-        // startDate is inherited from Account and persisted in the parent "accounts" table
+        this.taxRate = taxRate;
         setStartDate(startDate);
         this.maturityDate = maturityDate;
-
     }
 
 }

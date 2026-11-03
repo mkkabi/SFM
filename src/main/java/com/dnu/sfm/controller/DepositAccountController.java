@@ -1,12 +1,14 @@
 package com.dnu.sfm.controller;
 
 import com.dnu.sfm.dto.DepositAccountDto;
+import com.dnu.sfm.dto.DepositSettlementDto;
 import com.dnu.sfm.exception.AccountNotFoundException;
 import com.dnu.sfm.exception.InactiveAccountException;
 import com.dnu.sfm.exception.MaturityNotReachedException;
 import com.dnu.sfm.model.AccountOperation;
 import com.dnu.sfm.model.DepositAccount;
 import com.dnu.sfm.service.DepositAccountService;
+import com.dnu.sfm.service.impl.DepositInterestCalculatorService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,10 +23,14 @@ import java.math.BigDecimal;
 public class DepositAccountController {
 
     private final DepositAccountService depositAccountService;
+    private final DepositInterestCalculatorService depositInterestCalculatorService;
 
     // Spring will automatically inject DepositAccountService here
-    public DepositAccountController(DepositAccountService depositAccountService) {
+
+
+    public DepositAccountController(DepositAccountService depositAccountService, DepositInterestCalculatorService depositInterestCalculatorService) {
         this.depositAccountService = depositAccountService;
+        this.depositInterestCalculatorService = depositInterestCalculatorService;
     }
 
     @GetMapping("/new")
@@ -107,4 +113,11 @@ public class DepositAccountController {
         }
     }
 
+
+    @GetMapping("/{id}/settlement")
+    public String showSettlement(@PathVariable Long id, Model model) {
+        DepositSettlementDto settlement = depositInterestCalculatorService.calculateSettlement(id);
+        model.addAttribute("settlement", settlement);
+        return "deposit-settlement";
+    }
 }
