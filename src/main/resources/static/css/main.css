@@ -17,9 +17,7 @@ footer {
     width: 100%;
 }
 
-footer, nav{
-    background-color: rgb(53 113 201)!important;
-}
+
 
 .nav-link{
     /*color:white!important;*/
@@ -234,4 +232,14 @@ body {
 }
 .input-group-text {
     background-color: #f8f9fa;
+}
+
+.rate-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 4px solid #0d6efd;
+}
+.currency-badge {
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
 }
