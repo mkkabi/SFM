@@ -85,6 +85,23 @@
                             <td class="text-center">
                                 <div class="d-inline-flex gap-1">
 
+                                    <a th:if="${account instanceof T(com.dnu.sfm.model.DepositAccount)}" th:href="@{/deposit-accounts/{id}/settlement(id=${account.id})}"
+                                       class="btn btn-sm btn-outline-info"
+                                       data-bs-toggle="tooltip"
+                                       data-bs-placement="top"
+                                       title="Settlement & Tax">
+                                        <i class="bi bi-calculator"></i>
+                                    </a>
+
+                                    <span th:if="${!(account instanceof T(com.dnu.sfm.model.DepositAccount))}"
+                                       class="btn btn-sm "
+                                       data-bs-toggle="tooltip"
+                                       data-bs-placement="top"
+                                       >
+
+                                    </span>
+
+
                                     <a title="Manage" th:if="${account instanceof T(com.dnu.sfm.model.DepositAccount)}"
                                        th:href="@{/deposit-accounts/{id}/update(id=${account.id})}"
                                        class="btn btn-sm btn-outline-primary">
@@ -106,6 +123,17 @@
                                        class="btn btn-sm btn-outline-secondary">
                                         <i class="bi bi-clock-history me-1"></i>
                                     </a>
+
+<!--                                    <a  th:href="@{/deposit-accounts/{id}/settlement(id=${account.id})}"-->
+<!--                                       class="btn btn-sm btn-outline-primary"-->
+<!--                                       title="View Projected Settlement">-->
+<!--                                        <i class="bi bi-calculator"></i>-->
+<!--                                        <span>Settlement</span>-->
+<!--                                    </a>-->
+
+
+
+
                                 </div>
                             </td>
                         </tr>

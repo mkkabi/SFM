@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--  <title th:text="'Settlement - ' + ${settlement.accountName}">Deposit Settlement</title>-->
+<!--</head>-->
+
+<head th:replace="~{elements.html :: head('Settlement - ' + ${settlement.accountName})}">
+</head>
+
+<body>
+<div th:replace="~{elements.html :: navbar}"></div>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header-bar">
+    <div class="header-title">
+      <h1 th:text="${settlement.accountName} + ' — Projected Settlement'">Deposit Settlement</h1>
+      <p th:text="'Account ID: #' + ${settlement.accountId} + ' | Settlement projected at maturity date'">Overview</p>
+    </div>
+    <div class="btn-group">
+      <a th:href="@{/deposit-accounts/{id}/update(id=${settlement.accountId})}" class="btn btn-secondary">
+        Manage / Top Up
+      </a>
+      <a th:href="@{/accounts/{id}/transactions(id=${settlement.accountId})}" class="btn btn-secondary">
+        Ledger History
+      </a>
+      <a th:href="@{/accounts}" class="btn btn-primary">
+        All Accounts
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Metrics Grid -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">Total Principal</div>
+      <div class="metric-value"
+           th:text="${#numbers.formatDecimal(settlement.totalPrincipal, 1, 'COMMA', 2, 'POINT')} + ' ' + ${settlement.currency}">
+        10,000.00 UAH
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">Gross Interest</div>
+      <div class="metric-value text-green"
+           th:text="'+' + ${#numbers.formatDecimal(settlement.grossInterest, 1, 'COMMA', 2, 'POINT')} + ' ' + ${settlement.currency}">
+        +1,200.00 UAH
+      </div>
+    </div>
+
+    <!-- Metric Card -->
+    <div class="metric-card">
+      <div class="metric-label" th:text="'Tax Withheld (' + ${settlement.taxRate} + '%)'">Tax Withheld</div>
+      <div class="metric-value text-red"
+           th:text="'-' + ${#numbers.formatDecimal(settlement.taxWithheld, 1, 'COMMA', 2, 'POINT')} + ' ' + ${settlement.currency}">
+        -50.00 UAH
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">Net Interest</div>
+      <div class="metric-value text-green"
+           th:text="'+' + ${#numbers.formatDecimal(settlement.netInterest, 1, 'COMMA', 2, 'POINT')} + ' ' + ${settlement.currency}">
+        +1,104.00 UAH
+      </div>
+    </div>
+
+    <div class="metric-card highlight">
+      <div class="metric-label">Final Payout at Maturity</div>
+      <div class="metric-value"
+           th:text="${#numbers.formatDecimal(settlement.finalPayout, 1, 'COMMA', 2, 'POINT')} + ' ' + ${settlement.currency}">
+        11,104.00 UAH
+      </div>
+    </div>
+  </div>
+
+  <!-- Contract Details Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Contract Terms</h2>
+      <span class="badge" th:text="${settlement.interestRate} + '% p.a.'">12.0000% p.a.</span>
+    </div>
+    <div class="details-grid">
+      <div class="detail-item">
+        <div class="label">Opening Date</div>
+        <div class="value" th:text="${settlement.startDate}">2026-01-01</div>
+      </div>
+      <div class="detail-item">
+        <div class="label">Maturity Date</div>
+        <div class="value" th:text="${settlement.maturityDate}">2027-01-01</div>
+      </div>
+      <div class="detail-item">
+        <div class="label">Total Term</div>
+        <div class="value" th:text="${settlement.totalTermDays} + ' Days'">365 Days</div>
+      </div>
+      <div class="detail-item">
+        <div class="label">Tax Rate</div>
+        <div class="value" th:text="${settlement.taxRate} + '%'">5.00%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tranche / Top-Up Breakdown Table -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Tranche Accrual Breakdown (Mid-Term Top-Ups)</h2>
+    </div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+        <tr>
+          <th>Date Deposited</th>
+          <th>Type</th>
+          <th class="text-right">Tranche Amount</th>
+          <th class="text-right">Days Held to Maturity</th>
+          <th class="text-right">Gross Interest</th>
+          <th class="text-right">Net Interest (After 8% Tax)</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="tranche : ${settlement.tranches}">
+          <td th:text="${tranche.depositDate}">2026-01-01</td>
+          <td>
+            <span class="badge" th:text="${tranche.isInitial ? 'Initial Deposit' : 'Top-Up'}">Initial Deposit</span>
+          </td>
+          <td class="text-right"
+              th:text="${#numbers.formatDecimal(tranche.amount, 1, 'COMMA', 2, 'POINT')} + ' ' + ${settlement.currency}">
+            10,000.00 UAH
+          </td>
+          <td class="text-right" th:text="${tranche.daysInvested} + ' d'">365 d</td>
+          <td class="text-right text-green"
+              th:text="${#numbers.formatDecimal(tranche.grossEarned, 1, 'COMMA', 2, 'POINT')} + ' ' + ${settlement.currency}">
+            1,200.00 UAH
+          </td>
+          <td class="text-right"
+              th:text="${#numbers.formatDecimal(tranche.netEarned, 1, 'COMMA', 2, 'POINT')} + ' ' + ${settlement.currency}">
+            1,104.00 UAH
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(settlement.tranches)}">
+          <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            No deposit transactions recorded for this account.
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tax-notice">
+      <strong>Tax Withholding Notice:</strong> Taxes (5.00% primary income tax + 3.00% additional levy) are withheld strictly from the gross interest earnings and do not affect the deposited principal. Interest is computed on an Actual/365 simple day-count basis for each tranche.
+    </div>
+  </div>
+
+</div>
+
+<footer th:replace="elements.html :: footer"></footer>
+</body>
+</html>
