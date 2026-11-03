@@ -5,6 +5,7 @@ import com.dnu.sfm.model.Account;
 import com.dnu.sfm.model.TransactionType;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TransactionService {
@@ -19,6 +20,11 @@ public interface TransactionService {
      * @param amount  amount of money moved, always positive
      */
     void recordTransaction(Account account, TransactionType type, BigDecimal amount);
+
+    /**
+     * Records a transaction with a specific historical or custom timestamp.
+     */
+    void recordTransaction(Account account, TransactionType type, BigDecimal amount, LocalDateTime timestamp);
 
     /**
      * Full transaction history of one account, newest first.
