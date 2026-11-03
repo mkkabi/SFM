@@ -47,7 +47,8 @@ public class CashAccountServiceImpl implements CashAccountService {
             transactionService.recordTransaction(
                     savedAccount,
                     TransactionType.DEPOSIT,
-                    savedAccount.getBalance()
+                    savedAccount.getBalance(),
+                    savedAccount.getStartDate().atStartOfDay()
             );
         }
 
