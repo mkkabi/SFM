@@ -58,7 +58,8 @@ public class DepositAccountServiceImpl implements DepositAccountService {
             transactionService.recordTransaction(
                     savedAccount,
                     TransactionType.DEPOSIT,
-                    savedAccount.getBalance()
+                    savedAccount.getBalance(),
+                    savedAccount.getStartDate().atStartOfDay()
             );
         }
 

@@ -36,12 +36,20 @@ public class TransactionServiceImp implements TransactionService {
 
     @Override
     public void recordTransaction(Account account, TransactionType type, BigDecimal amount) {
+        recordTransaction(account, type, amount, LocalDateTime.now());
+    }
+
+    @Override
+    public void recordTransaction(Account account, TransactionType type, BigDecimal amount, LocalDateTime timestamp) {
         Objects.requireNonNull(account, "Account must not be null");
         Objects.requireNonNull(type, "Transaction type must not be null");
         Objects.requireNonNull(amount, "Amount must not be null");
 
-        LocalDate today = LocalDate.now();
-        Map<String, BigDecimal> rates = exchangeRateProviderService.getEffectiveRatesForDate(today);
+        LocalDateTime effectiveTimestamp = timestamp != null ? timestamp : LocalDateTime.now();
+        LocalDate rateDate = effectiveTimestamp.toLocalDate();
+
+        // Fetch historical rates for the transaction date (ExchangeRateProviderService already supports this)
+        Map<String, BigDecimal> rates = exchangeRateProviderService.getEffectiveRatesForDate(rateDate);
 
         BigDecimal rateUsd = rates.get("USD");
         BigDecimal rateEur = rates.get("EUR");
@@ -75,13 +83,13 @@ public class TransactionServiceImp implements TransactionService {
                 amountInEur.setScale(DISPLAY_SCALE, RoundingMode.HALF_EVEN),
                 rateUsd.setScale(4, RoundingMode.HALF_EVEN),
                 rateEur.setScale(4, RoundingMode.HALF_EVEN),
-                LocalDateTime.now()
+                effectiveTimestamp
         );
 
         transactionRepository.save(transaction);
 
-        log.info("Recorded multi-currency tx: accountId={}, type={}, native={} {}, UAH={}, USD={}, EUR={}",
-                account.getId(), type, amount, account.getCurrency(),
+        log.info("Recorded multi-currency tx at {}: accountId={}, type={}, native={} {}, UAH={}, USD={}, EUR={}",
+                effectiveTimestamp, account.getId(), type, amount, account.getCurrency(),
                 transaction.getAmountUah(), transaction.getAmountUsd(), transaction.getAmountEur());
     }
 
