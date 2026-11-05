@@ -82,7 +82,7 @@
   <div class="panel">
     <div class="panel-header">
       <h2>Contract Terms</h2>
-      <span class="badge" th:text="${settlement.interestRate} + '% p.a.'">12.0000% p.a.</span>
+      <span class="badge text-bg-success" th:text="${settlement.interestRate.stripTrailingZeros().toPlainString()} + '% percent annual'">15.00% p.a.</span>
     </div>
     <div class="details-grid">
       <div class="detail-item">
@@ -125,7 +125,7 @@
         <tr th:each="tranche : ${settlement.tranches}">
           <td th:text="${tranche.depositDate}">2026-01-01</td>
           <td>
-            <span class="badge" th:text="${tranche.isInitial ? 'Initial Deposit' : 'Top-Up'}">Initial Deposit</span>
+            <span class="badge text-bg-success" th:text="${tranche.isInitial ? 'Initial Deposit' : 'Top-Up'}">Initial Deposit</span>
           </td>
           <td class="text-right"
               th:text="${#numbers.formatDecimal(tranche.amount, 1, 'COMMA', 2, 'POINT')} + ' ' + ${settlement.currency}">
@@ -150,9 +150,9 @@
       </table>
     </div>
 
-    <div class="tax-notice">
-      <strong>Tax Withholding Notice:</strong> Taxes (5.00% primary income tax + 3.00% additional levy) are withheld strictly from the gross interest earnings and do not affect the deposited principal. Interest is computed on an Actual/365 simple day-count basis for each tranche.
-    </div>
+<!--    <div class="tax-notice">-->
+<!--      <strong>Tax Withholding Notice:</strong> Taxes (5.00% primary income tax + 3.00% additional levy) are withheld strictly from the gross interest earnings and do not affect the deposited principal. Interest is computed on an Actual/365 simple day-count basis for each tranche.-->
+<!--    </div>-->
   </div>
 
 </div>

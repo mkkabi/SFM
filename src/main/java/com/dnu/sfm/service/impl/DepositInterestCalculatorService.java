@@ -9,6 +9,7 @@ import com.dnu.sfm.model.TransactionType;
 import com.dnu.sfm.repository.DepositAccountRepository;
 import com.dnu.sfm.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ public class DepositInterestCalculatorService {
     private final TransactionRepository transactionRepository;
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "depositSettlements", key = "#accountId")
     public DepositSettlementDto calculateSettlement(Long accountId) {
         DepositAccount account = depositAccountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException("Deposit account with id " + accountId + " not found"));
