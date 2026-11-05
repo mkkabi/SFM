@@ -15,6 +15,7 @@ import com.dnu.sfm.service.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -80,6 +81,7 @@ public class DepositAccountServiceImpl implements DepositAccountService {
     }
 
     @Override
+    @CacheEvict(value = "depositSettlements", key = "#id")
     public DepositAccount depositToDepositAccount(Long id, BigDecimal amount) {
         requirePositiveAmount(amount, "Deposit amount must be positive");
 
@@ -130,6 +132,7 @@ public class DepositAccountServiceImpl implements DepositAccountService {
     }
 
     @Override
+    @CacheEvict(value = "depositSettlements", key = "#id")
     public DepositAccount extendMaturityDate(Long id) {
         DepositAccount account = getDepositAccountById(id);
 
