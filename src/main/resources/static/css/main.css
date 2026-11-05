@@ -480,3 +480,39 @@ tr:last-child td {
 }
 
 /*Settlement END*/
+
+
+
+
+.tooltip .tooltip-inner {
+    background-color: #28394e !important;
+    color: #fff !important;
+}
+
+
+/* Increase max-width from Bootstrap default 200px */
+/* Custom class applied via customClass option */
+.formula-tooltip {
+    --bs-tooltip-max-width: auto!important;
+    --bs-tooltip-min-width: 780px!important;
+    --bs-tooltip-min-height: 780px!important;
+    --bs-tooltip-padding-x: 1rem;
+    --bs-tooltip-padding-y: 0.75rem;
+    font-size: 0.875rem;
+}
+
+.formula{
+    height:auto;
+}
+
+.formula-tooltip .tooltip-inner {
+    text-align: left;
+}
+
+/* Ensure summation and fraction sizing fit comfortably */
+.formula-tooltip .katex-display {
+    margin: 0.4rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
