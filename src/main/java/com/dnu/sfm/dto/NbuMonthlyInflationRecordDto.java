@@ -34,15 +34,18 @@ public record NbuMonthlyInflationRecordDto(
         @JsonProperty("freq")
         String freq,
 
+        //Потребительская корзина инфляции
         @JsonProperty("mcrd081")
         String commodityGroup,
 
         @JsonProperty("ku")
         String regionCode,
 
+        //Отрасли для промышленной инфляции PPI
         @JsonProperty("mcrk110")
         String mcrk110,
 
+        //Тип зрізу показника - PCPM_, DTPY_ ...
         @JsonProperty("tzep")
         String indexType,
 

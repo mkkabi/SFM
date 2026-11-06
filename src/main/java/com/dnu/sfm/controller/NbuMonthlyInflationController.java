@@ -21,7 +21,7 @@ import java.util.List;
 
 @Slf4j
 @Controller
-@RequestMapping("/inflation/monthly")
+@RequestMapping("/inflation/nbu/monthly")
 @RequiredArgsConstructor
 public class NbuMonthlyInflationController {
 
@@ -79,7 +79,7 @@ public class NbuMonthlyInflationController {
             if (dtos.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "NBU API returned 0 records for " + date + ". The data might not be published yet.");
-                return "redirect:/inflation/monthly?date=" + date;
+                return "redirect:/inflation/nbu/monthly?date=" + date;
             }
 
             // Persist or update entities
@@ -108,7 +108,7 @@ public class NbuMonthlyInflationController {
             redirectAttributes.addFlashAttribute("errorMessage", "Error fetching data from NBU API: " + ex.getMessage());
         }
 
-        return "redirect:/inflation/monthly?date=" + date;
+        return "redirect:/inflation/nbu/monthly?date=" + date;
     }
 
     private LocalDate parseMonthToFirstDay(String dateStr) {

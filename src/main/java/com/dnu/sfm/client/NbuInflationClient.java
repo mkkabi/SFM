@@ -79,7 +79,7 @@ public class NbuInflationClient {
                 return Collections.emptyList();
             }
 
-            log.info("Successfully fetched {} inflation records from NBU.", records.size());
+            log.info("Successfully fetched {} Annual inflation records from NBU.", records.size());
             return records;
 
         } catch (Exception ex) {
