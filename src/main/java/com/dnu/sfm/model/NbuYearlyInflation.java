@@ -1,6 +1,6 @@
 package com.dnu.sfm.model;
 
-import com.dnu.sfm.dto.NbuAnnualInflationRecordDto;
+import com.dnu.sfm.dto.NbuYearlyInflationRecordDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -80,7 +80,7 @@ public class NbuYearlyInflation {
     /**
      * Factory method to convert an NBU annual DTO into a persistent entity.
      */
-    public static NbuYearlyInflation fromDto(NbuAnnualInflationRecordDto dto) {
+    public static NbuYearlyInflation fromDto(NbuYearlyInflationRecordDto dto) {
         Year year = dto.toYear();
         Integer intYear = (year != null) ? year.getValue() : null;
 

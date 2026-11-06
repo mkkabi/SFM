@@ -11,7 +11,7 @@ import java.time.Year;
  * Target endpoint: <a href="https://bank.gov.ua/NBUStatService/v1/statdirectory/inflation?period=y&date=YYYYMM&json">...</a>
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record NbuAnnualInflationRecordDto(
+public record NbuYearlyInflationRecordDto(
         @JsonProperty("dt")
         String dt,
 

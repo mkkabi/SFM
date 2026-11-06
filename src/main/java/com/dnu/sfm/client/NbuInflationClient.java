@@ -1,6 +1,6 @@
 package com.dnu.sfm.client;
 
-import com.dnu.sfm.dto.NbuAnnualInflationRecordDto;
+import com.dnu.sfm.dto.NbuYearlyInflationRecordDto;
 import com.dnu.sfm.dto.NbuMonthlyInflationRecordDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -60,11 +60,11 @@ public class NbuInflationClient {
      * Fetches monthly Consumer Price Index (CPI) history for Ukraine directly from NBU.
      * https://bank.gov.ua/NBUStatService/v1/statdirectory/inflation?period=m&date=202301&json
      */
-    public List<NbuAnnualInflationRecordDto> getUkraineAnnualInflation(LocalDate date) {
+    public List<NbuYearlyInflationRecordDto> getUkraineAnnualInflation(LocalDate date) {
         String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy"));
         try {
             log.info("Requesting Ukraine monthly inflation from NBU StatService...");
-            List<NbuAnnualInflationRecordDto> records = restClient.get()
+            List<NbuYearlyInflationRecordDto> records = restClient.get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/inflation")
                             .queryParam("period", 'y')
@@ -72,7 +72,7 @@ public class NbuInflationClient {
                             .queryParam("json", "")
                             .build())
                     .retrieve()
-                    .body(new ParameterizedTypeReference<List<NbuAnnualInflationRecordDto>>() {});
+                    .body(new ParameterizedTypeReference<List<NbuYearlyInflationRecordDto>>() {});
 
             if (records == null || records.isEmpty()) {
                 log.warn("NBU returned 0 inflation records.");

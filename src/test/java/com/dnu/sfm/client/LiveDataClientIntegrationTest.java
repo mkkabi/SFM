@@ -1,7 +1,7 @@
 package com.dnu.sfm.client;
 
 import com.dnu.sfm.dto.MonthlyInflationRecordDto;
-import com.dnu.sfm.dto.NbuAnnualInflationRecordDto;
+import com.dnu.sfm.dto.NbuYearlyInflationRecordDto;
 import com.dnu.sfm.dto.NbuMonthlyInflationRecordDto;
 import com.dnu.sfm.model.Currency;
 import com.dnu.sfm.model.ExchangeRate;
@@ -69,9 +69,9 @@ class LiveDataClientIntegrationTest {
     @Test
     @DisplayName("verify NBU inflation Annual data is not empty")
     void testLiveNbuInflationYearly() {
-        List<NbuAnnualInflationRecordDto> nbuYearlyInflationRecordDtos = nbuInflationClient.getUkraineAnnualInflation(LocalDate.of(2023, 1, 1));
+        List<NbuYearlyInflationRecordDto> nbuYearlyInflationRecordDtos = nbuInflationClient.getUkraineAnnualInflation(LocalDate.of(2023, 1, 1));
         assertThat(nbuYearlyInflationRecordDtos).isNotNull().isNotEmpty();
-        for (NbuAnnualInflationRecordDto dto : nbuYearlyInflationRecordDtos) {
+        for (NbuYearlyInflationRecordDto dto : nbuYearlyInflationRecordDtos) {
             System.out.println(dto);
         }
     }
