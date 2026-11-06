@@ -8,8 +8,7 @@ import java.time.Year;
 
 /**
  * Data Transfer Object representing an annual inflation record returned by the NBU StatService API.
- *
- * Target endpoint: https://bank.gov.ua/NBUStatService/v1/statdirectory/inflation?period=y&date=YYYYMM&json
+ * Target endpoint: <a href="https://bank.gov.ua/NBUStatService/v1/statdirectory/inflation?period=y&date=YYYYMM&json">...</a>
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record NbuAnnualInflationRecordDto(
