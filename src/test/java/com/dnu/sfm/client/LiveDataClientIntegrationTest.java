@@ -1,6 +1,8 @@
 package com.dnu.sfm.client;
 
 import com.dnu.sfm.dto.MonthlyInflationRecordDto;
+import com.dnu.sfm.dto.NbuAnnualInflationRecordDto;
+import com.dnu.sfm.dto.NbuMonthlyInflationRecordDto;
 import com.dnu.sfm.model.Currency;
 import com.dnu.sfm.model.ExchangeRate;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,6 +23,7 @@ class LiveDataClientIntegrationTest {
 
     private NbuExchangeRateClient nbuClient;
     private StatBureauInflationClient statBureauClient;
+    private NbuInflationClient nbuInflationClient;
 
     @BeforeEach
     void setUp() {
@@ -29,10 +32,11 @@ class LiveDataClientIntegrationTest {
         ObjectMapper objectMapper = new ObjectMapper();
         nbuClient = new NbuExchangeRateClient(builder);
         statBureauClient = new StatBureauInflationClient(builder, objectMapper);
+        nbuInflationClient = new NbuInflationClient(builder);
     }
 
     @Test
-    @DisplayName("Verify NBU live endpoint returns valid rates for recent weekday")
+    @DisplayName("Verify NBU live endpoint returns valid exchange rates for recent weekday")
     void testLiveNbuRates() {
         // Use a known recent past weekday to avoid weekend publication delays
         LocalDate testDate = LocalDate.now().minusDays(3);
@@ -52,8 +56,30 @@ class LiveDataClientIntegrationTest {
     }
 
     @Test
+    @DisplayName("verify NBU inflation Monthly data is not empty")
+    void testLiveNbuInflationMonthly() {
+        List<NbuMonthlyInflationRecordDto> nbuMonthlyInflationRecordDtos = nbuInflationClient.getUkraineMonthlyInflation(LocalDate.of(2023, 1, 1));
+        assertThat(nbuMonthlyInflationRecordDtos).isNotNull().isNotEmpty();
+        for (NbuMonthlyInflationRecordDto dto : nbuMonthlyInflationRecordDtos) {
+            System.out.println(dto);
+        }
+    }
+
+
+    @Test
+    @DisplayName("verify NBU inflation Annual data is not empty")
+    void testLiveNbuInflationYearly() {
+        List<NbuAnnualInflationRecordDto> nbuYearlyInflationRecordDtos = nbuInflationClient.getUkraineAnnualInflation(LocalDate.of(2023, 1, 1));
+        assertThat(nbuYearlyInflationRecordDtos).isNotNull().isNotEmpty();
+        for (NbuAnnualInflationRecordDto dto : nbuYearlyInflationRecordDtos) {
+            System.out.println(dto);
+        }
+    }
+
+
+    @Test
     @DisplayName("Verify StatBureau live endpoint returns historical records for Ukraine")
-    void testLiveStatBureauHistory() {
+    void testLiveStatBureauHistoryUAH() {
         List<MonthlyInflationRecordDto> history = statBureauClient.getHistoricalInflation(Currency.UAH);
 
         assertThat(history).isNotNull().isNotEmpty();
@@ -72,7 +98,7 @@ class LiveDataClientIntegrationTest {
 
     @Test
     @DisplayName("Verify StatBureau live endpoint returns historical records for Europe")
-    void testLiveStatBureauHistoryEurope() {
+    void testLiveStatBureauHistoryEUR() {
         List<MonthlyInflationRecordDto> history = statBureauClient.getHistoricalInflation(Currency.EUR);
 
         assertThat(history).isNotNull().isNotEmpty();
