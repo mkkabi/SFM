@@ -30,7 +30,8 @@ import java.time.YearMonth;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uk_nbu_monthly_date_index_group",
-                        columnNames = {"record_date", "index_type", "commodity_group"}
+                        columnNames = {"record_date", "index_type", "commodity_group",
+                                "region_code", "id_api"}
                 )
         }
 )
@@ -54,42 +55,75 @@ public class NbuMonthlyInflation {
 
     /**
      * NBU index type indicator (e.g., "PCPM_" for MoM, "DTPY_" for YoY).
+     * Part of the natural business key, therefore mandatory.
      */
-    @Column(name = "index_type", length = 20)
+    @Column(name = "index_type", length = 20, nullable = false)
     private String indexType;
 
     /**
      * Commodity group name (e.g., "Total").
+     * Part of the natural business key, therefore mandatory.
      */
-    @Column(name = "commodity_group", length = 100)
+    @Column(name = "commodity_group", length = 100, nullable = false)
     private String commodityGroup;
 
     /**
-     * Raw API identifier from NBU (e.g., "prices_price_cpi_").
+     * NBU region code ("ku" from the API). Empty string = national (Ukraine-wide)
+     * aggregate. A non-empty code identifies one of the regional breakdowns, so
+     * (record_date, index_type, commodity_group, region_code) is unique.
      */
-    @Column(name = "id_api", length = 50)
+    @Column(name = "region_code", length = 10, nullable = false)
+    private String regionCode = "";
+
+    /**
+     * Raw API identifier from NBU (e.g., "prices_price_cpi_"). Identifies the
+     * index family (CPI vs. core inflation vs. PPI), which otherwise share the
+     * same index_type / commodity_group / region values - part of the natural key.
+     */
+    @Column(name = "id_api", length = 50, nullable = false)
     private String idApi;
 
-    public NbuMonthlyInflation(LocalDate recordDate, BigDecimal ratePercent, String indexType, String commodityGroup, String idApi) {
+    public NbuMonthlyInflation(LocalDate recordDate, BigDecimal ratePercent, String indexType,
+                               String commodityGroup, String regionCode, String idApi) {
         this.recordDate = recordDate;
         this.ratePercent = ratePercent != null ? ratePercent.setScale(4, RoundingMode.HALF_EVEN) : BigDecimal.ZERO;
         this.indexType = indexType;
         this.commodityGroup = commodityGroup;
+        // Normalize null/blank to empty string so the unique constraint also covers
+        // national (Ukraine-wide) rows - SQLite treats NULLs as distinct in unique indexes.
+        this.regionCode = (regionCode != null && !regionCode.isBlank()) ? regionCode.trim() : "";
         this.idApi = idApi;
     }
 
     /**
      * Factory method to convert an NBU monthly DTO into a persistent entity.
+     *
+     * @throws IllegalStateException if the DTO carries an unparseable date or is
+     *         missing the mandatory index type / commodity group, so that bad
+     *         data fails loudly instead of being persisted under the wrong month.
      */
     public static NbuMonthlyInflation fromDto(NbuMonthlyInflationRecordDto dto) {
         YearMonth ym = dto.toYearMonth();
-        LocalDate date = (ym != null) ? ym.atDay(1) : LocalDate.now().withDayOfMonth(1);
+        if (ym == null) {
+            throw new IllegalStateException(
+                    "Unparseable NBU date '" + dto.dt() + "' - refusing to persist the record");
+        }
+        if (dto.indexType() == null || dto.indexType().isBlank()
+                || dto.commodityGroup() == null || dto.commodityGroup().isBlank()) {
+            throw new IllegalStateException(
+                    "NBU record dated " + dto.dt() + " is missing index type or commodity group");
+        }
+        if (dto.idApi() == null || dto.idApi().isBlank()) {
+            throw new IllegalStateException(
+                    "NBU record dated " + dto.dt() + " is missing the API identifier (id_api)");
+        }
 
         return new NbuMonthlyInflation(
-                date,
+                ym.atDay(1),
                 dto.toRatePercent(),
                 dto.indexType(),
                 dto.commodityGroup(),
+                dto.regionCode(),
                 dto.idApi()
         );
     }

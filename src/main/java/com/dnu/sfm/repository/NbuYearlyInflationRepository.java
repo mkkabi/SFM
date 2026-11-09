@@ -4,13 +4,14 @@ import com.dnu.sfm.model.NbuYearlyInflation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface NbuYearlyInflationRepository extends JpaRepository<NbuYearlyInflation, Long> {
-    Optional<NbuYearlyInflation> findByInflationYearAndTzepAndMcrd081(
-            Integer inflationYear, String tzep, String mcrd081);
 
-    boolean existsByInflationYearAndTzepAndMcrd081(
-            Integer inflationYear, String tzep, String mcrd081);
+    /** All stored records (every commodity group and index type) for one calendar year. */
+    List<NbuYearlyInflation> findByInflationYear(Integer inflationYear);
+
+    /** Total number of stored records for one calendar year. */
+    long countByInflationYear(Integer inflationYear);
 }

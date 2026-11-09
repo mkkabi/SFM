@@ -9,15 +9,14 @@ import com.dnu.sfm.repository.AccountRepository;
 import com.dnu.sfm.repository.TransactionRepository;
 import com.dnu.sfm.service.CurrencyAnalyticsService;
 import com.dnu.sfm.service.ExchangeRateProviderService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -97,7 +96,7 @@ public class CurrencyAnalyticsServiceImpl implements CurrencyAnalyticsService {
 
     private String buildVerdict(String currentCurrency, List<CurrencyOutcomeDto> outcomes) {
         CurrencyOutcomeDto best = outcomes.stream()
-                .max((a, b) -> a.valueInBaseCurrencyToday().compareTo(b.valueInBaseCurrencyToday()))
+                .max(Comparator.comparing(CurrencyOutcomeDto::valueInBaseCurrencyToday))
                 .orElse(null);
 
         if (best != null && best.currencyCode().equalsIgnoreCase(currentCurrency)) {

@@ -4,7 +4,7 @@ import com.dnu.sfm.exception.AccountNotFoundException;
 import com.dnu.sfm.model.Account;
 import com.dnu.sfm.repository.AccountRepository;
 import com.dnu.sfm.service.AccountService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

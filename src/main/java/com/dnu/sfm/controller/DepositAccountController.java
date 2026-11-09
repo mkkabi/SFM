@@ -97,7 +97,8 @@ public class DepositAccountController {
                 }
                 case EXTEND_MATURITY -> {
                     DepositAccount extended = depositAccountService.extendMaturityDate(id);
-                    result = "Maturity date extended to " + extended.getMaturityDate() + ".";
+                    result = "Maturity date extended to " + extended.getMaturityDate()
+                            + " (term doubled).";
                 }
                 default -> throw new IllegalArgumentException("Unsupported operation: " + operation);
             }

@@ -68,7 +68,7 @@
                 <span class="input-group-text"><i class="bi bi-arrow-left-right"></i></span>
                 <select id="operation" name="operation" class="form-select">
                   <option value="DEPOSIT">Deposit (add funds)</option>
-                  <option value="WITHDRAW">Withdraw (maturity date only)</option>
+                  <option value="WITHDRAW">Withdraw (on or after maturity date)</option>
                   <option value="EXTEND_MATURITY"
                           th:text="|Extend term (+${T(java.time.temporal.ChronoUnit).DAYS.between(account.startDate, account.maturityDate)} days)|">
                     Extend term (+365 days)

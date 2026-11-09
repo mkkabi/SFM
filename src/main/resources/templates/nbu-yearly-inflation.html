@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{elements.html :: head('NBU yearly inflation')}">
+</head>
+
+
+<body>
+<div th:replace="~{elements.html :: navbar}"></div>
+
+<div class="container pb-5">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 fw-bold mb-1">NBU Yearly Inflation</h2>
+            <p class="text-muted small mb-0">Official annual Consumer Price Index statistics from the National Bank of Ukraine</p>
+        </div>
+        <div>
+            <a th:href="@{/accounts}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Accounts
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <span th:text="${successMessage}">Operation successful</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <span th:text="${errorMessage}">Error occurred</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Year Picker Card -->
+    <div class="card mb-4">
+        <div class="card-body p-4">
+            <form th:action="@{/inflation/nbu/yearly}" method="get" class="row g-3 align-items-end">
+                <div class="col-md-5 col-sm-12">
+                    <label for="yearInput" class="form-label fw-semibold text-secondary">
+                        <i class="bi bi-calendar3 me-1"></i> Reporting Year
+                    </label>
+                    <input type="number"
+                           min="1991"
+                           th:max="${#temporals.format(#temporals.createNow(), 'yyyy')}"
+                           step="1"
+                           id="yearInput"
+                           name="year"
+                           placeholder="e.g. 2024"
+                           class="form-control form-control-lg"
+                           th:value="${selectedYear}"
+                           required>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-search me-1"></i> Check Database
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Section (Visible after search) -->
+    <div th:if="${searched}">
+
+        <!-- CASE 1: Data NOT Present in Database -> Prompt to Fetch from NBU API -->
+        <div th:if="${!dataPresent}" class="card border-warning border-opacity-50 bg-light-subtle shadow-sm">
+            <div class="card-body p-5 text-center">
+                <div class="mb-3">
+                    <span class="badge bg-warning-subtle text-warning-emphasis p-3 rounded-circle">
+                        <i class="bi bi-cloud-arrow-down fs-1"></i>
+                    </span>
+                </div>
+                <h4 class="fw-bold text-dark mb-2">No Stored Data Found</h4>
+                <p class="text-secondary mb-4 mx-auto" style="max-width: 520px;">
+                    Annual inflation data for <strong th:text="${selectedYear}">2024</strong> is not yet stored in your local database.
+                    Retrieve and cache it directly from the National Bank of Ukraine (NBU) StatService.
+                </p>
+
+                <form th:action="@{/inflation/nbu/yearly/fetch}" method="post" class="d-inline-block">
+                    <input type="hidden" name="year" th:value="${selectedYear}">
+                    <button type="submit" class="btn btn-warning btn-lg px-4 fw-semibold text-dark">
+                        <i class="bi bi-cloud-download me-2"></i> Get Data from NBU
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- CASE 2: Data IS Present in Database -> Display Persistent Records -->
+        <div th:if="${dataPresent}">
+            <!-- Source Badge & Action -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle stat-badge">
+                        <i class="bi bi-database-check me-1"></i> Data Present in Database
+                    </span>
+                    <span class="text-muted small">
+                        Year: <strong th:text="${selectedYear}">2024</strong>
+                        &bull; <strong th:text="${#lists.size(records)}">0</strong> stored records (national CPI)
+                    </span>
+                </div>
+                <!-- Optional Force Refresh -->
+                <form th:action="@{/inflation/nbu/yearly/fetch}" method="post" class="d-inline">
+                    <input type="hidden" name="year" th:value="${selectedYear}">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="Re-fetch from NBU API to update records">
+                        <i class="bi bi-arrow-repeat me-1"></i> Refresh from API
+                    </button>
+                </form>
+            </div>
+
+            <!-- Headline Annual CPI Card (if available) -->
+            <div th:if="${headlineCpi != null}" class="card mb-4 border-0 bg-primary text-white shadow">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 text-uppercase small fw-semibold">Headline Annual Inflation (Year-over-Year)</div>
+                        <div class="headline-cpi-val mt-1">
+                            <span th:text="${headlineCpi.ratePercent > 0 ? '+' : ''}">+</span><span th:text="${#numbers.formatDecimal(headlineCpi.ratePercent, 1, 2)}">5.10</span>%
+                        </div>
+                        <div class="text-white-50 small mt-1">
+                            Basket: <span class="text-white" th:text="${headlineCpi.mcrd081}">Total</span>
+                            &bull; Index Code: <span class="text-white" th:text="${headlineCpi.tzep}">DTPY_</span>
+                        </div>
+                    </div>
+                    <div class="display-5 text-white-50">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complete Records Table -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0 fw-bold">
+                        <i class="bi bi-table me-2 text-primary"></i>Stored Inflation Records (<span th:text="${records.size()}">0</span>)
+                    </h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Year</th>
+                            <th scope="col">Commodity Group</th>
+                            <th scope="col">Metric</th>
+                            <th scope="col">Value</th>
+                            <th scope="col">Index Type</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="item : ${records}"
+                            th:classappend="${item.mcrd081.equalsIgnoreCase('Total')} ? 'table-primary' : ''">
+                            <td class="text-muted small" th:text="${item.id}">1</td>
+                            <td class="fw-semibold" th:text="${item.inflationYear}">2024</td>
+                            <td>
+                                <span th:if="${item.mcrd081.equalsIgnoreCase('Total')}"
+                                      class="badge bg-primary-subtle text-primary-emphasis" th:text="${item.mcrd081}">Total</span>
+                                <span th:unless="${item.mcrd081.equalsIgnoreCase('Total')}"
+                                      class="text-secondary" th:text="${item.mcrd081}">01</span>
+                            </td>
+                            <td>
+                                <span th:if="${item.tzep.equalsIgnoreCase('DTPY_')}"
+                                      class="small">Annual change (YoY), %</span>
+                                <span th:if="${item.tzep.equalsIgnoreCase('PCCP_')}"
+                                      class="small">Dec-to-Dec index level</span>
+                                <span th:unless="${item.tzep.equalsIgnoreCase('DTPY_') or item.tzep.equalsIgnoreCase('PCCP_')}"
+                                      class="small text-muted" th:text="${item.tzep}">tzep</span>
+                            </td>
+                            <td>
+                                <!-- DTPY_ rows carry a percentage change; PCCP_ rows carry an index level -->
+                                <span class="fw-bold"
+                                      th:if="${item.tzep.equalsIgnoreCase('DTPY_')}"
+                                      th:classappend="${item.ratePercent > 0 ? 'text-danger' : (item.ratePercent < 0 ? 'text-success' : 'text-secondary')}">
+                                        <span th:text="${item.ratePercent > 0 ? '+' : ''}">+</span><span th:text="${#numbers.formatDecimal(item.ratePercent, 1, 2)}">5.10</span>%
+                                </span>
+                                <span class="fw-semibold text-secondary"
+                                      th:unless="${item.tzep.equalsIgnoreCase('DTPY_')}"
+                                      th:text="${#numbers.formatDecimal(item.ratePercent, 1, 2)}">112.90</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary-subtle text-secondary-emphasis" th:text="${item.tzep}">DTPY_</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<br>
+<br>
+<br>
+<footer th:replace="elements.html :: footer"></footer>
+</body>
+</html>

@@ -12,7 +12,7 @@ import com.dnu.sfm.repository.AccountRepository;
 import com.dnu.sfm.repository.DepositAccountRepository;
 import com.dnu.sfm.service.DepositAccountService;
 import com.dnu.sfm.service.TransactionService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -100,16 +100,19 @@ public class DepositAccountServiceImpl implements DepositAccountService {
     }
 
     @Override
+    @CacheEvict(value = "depositSettlements", key = "#id")
     public DepositAccount withdrawFromDepositAccount(Long id, BigDecimal amount) {
         requirePositiveAmount(amount, "Withdrawal amount must be positive");
 
         DepositAccount account = getActiveDepositAccount(id);
 
-        // Funds are locked until the deposit reaches its maturity date
+        // Funds are locked until the deposit reaches its maturity date; they stay
+        // reachable afterwards (a strict equality check would brick the deposit
+        // if the maturity day passes without a withdrawal).
         LocalDate today = LocalDate.now();
-        if (!today.equals(account.getMaturityDate())) {
+        if (today.isBefore(account.getMaturityDate())) {
             throw new MaturityNotReachedException(
-                    "Withdrawals are allowed only on the maturity date ("
+                    "Withdrawals are allowed only on or after the maturity date ("
                             + account.getMaturityDate() + "). Today is " + today);
         }
 

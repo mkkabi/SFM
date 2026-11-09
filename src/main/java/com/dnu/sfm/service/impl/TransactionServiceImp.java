@@ -8,7 +8,7 @@ import com.dnu.sfm.model.TransactionType;
 import com.dnu.sfm.repository.TransactionRepository;
 import com.dnu.sfm.service.ExchangeRateProviderService;
 import com.dnu.sfm.service.TransactionService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

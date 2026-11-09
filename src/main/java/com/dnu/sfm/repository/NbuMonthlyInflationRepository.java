@@ -18,5 +18,9 @@ public interface NbuMonthlyInflationRepository extends JpaRepository<NbuMonthlyI
 
     List<NbuMonthlyInflation> findByRecordDateOrderByCommodityGroupAsc(LocalDate recordDate);
 
+    /** All records (national + every regional breakdown) stored for one month. */
+    List<NbuMonthlyInflation> findByRecordDate(LocalDate recordDate);
 
+    /** Total number of stored records (all scopes) for one month. */
+    long countByRecordDate(LocalDate recordDate);
 }
