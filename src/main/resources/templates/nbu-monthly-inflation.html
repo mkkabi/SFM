@@ -154,7 +154,7 @@
                             <th scope="col">Commodity Group</th>
                             <th scope="col">Index Type</th>
                             <th scope="col">Rate</th>
-                            <th scope="col">API Identifier</th>
+                            <th scope="col">Metric</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -172,7 +172,12 @@
                                     </span>
                             </td>
                             <td>
-                                <code class="text-muted small" th:text="${item.idApi}">prices_price_cpi_</code>
+                                <span th:if="${item.indexType.equalsIgnoreCase('PCPM_')}"
+                                      class="small">Monthly change (MoM), %</span>
+                                <span th:if="${item.indexType.equalsIgnoreCase('DTPY_')}"
+                                      class="small">Annual change (YoY), %</span>
+                                <span th:unless="${item.indexType.equalsIgnoreCase('PCPM_') or item.indexType.equalsIgnoreCase('DTPY_')}"
+                                      class="small text-muted" th:text="${item.indexType}">indexType</span>
                             </td>
                         </tr>
                         </tbody>
