@@ -21,7 +21,8 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     @Override
     public List<ExchangeRate> parseRates(String jsonPayload) {
         try {
-            return objectMapper.readValue(jsonPayload, new TypeReference<List<ExchangeRate>>() {});
+            return objectMapper.readValue(jsonPayload, new TypeReference<>() {
+            });
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Failed to parse exchange rate JSON", e);
         }
