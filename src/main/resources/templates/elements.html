@@ -39,9 +39,6 @@
                             <a th:href="@{/}" class="nav-link active" aria-current="page">Home</a>
                         </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Link</a>
-                        </li>
 
                         <li class="nav-item dropdown">
                             <a th:href="@{#}" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -56,8 +53,19 @@
 
                         </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link disabled">Disabled</a>
+
+
+                        <li class="nav-item dropdown">
+                            <a th:href="@{#}" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Inflation
+                            </a>
+
+                            <ul class="dropdown-menu" >
+                                <li><a th:href="@{/inflation/nbu/monthly}" class="dropdown-item" >NBU Monthly</a></li>
+<!--                                <li><a th:href="@{/cash-accounts/new}" class="dropdown-item" >Add Cash Account</a></li>-->
+<!--                                <li><a th:href="@{/deposit-accounts/new}" class="dropdown-item" >Add Deposit Account</a></li>-->
+                            </ul>
+
                         </li>
                     </ul>
                 </div>

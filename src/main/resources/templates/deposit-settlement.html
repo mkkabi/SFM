@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
-<!--<head>-->
-<!--  <meta charset="UTF-8">-->
-<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
-<!--  <title th:text="'Settlement - ' + ${settlement.accountName}">Deposit Settlement</title>-->
-<!--</head>-->
-
 <head th:replace="~{elements.html :: head('Settlement - ' + ${settlement.accountName})}">
 </head>
 
@@ -45,7 +39,19 @@
     </div>
 
     <div class="metric-card">
-      <div class="metric-label">Gross Interest</div>
+      <div class="metric-label">Gross Interest
+
+        <!-- Tooltip 1: Deposit Gross Interest Formula -->
+        <i class="bi bi-question-circle-fill text-success math-tooltip-trigger"
+           role="button"
+           data-formula-target="#interest-formula-template"
+           aria-label="Gross interest formula"></i>
+
+
+
+
+
+      </div>
       <div class="metric-value text-green"
            th:text="'+' + ${#numbers.formatDecimal(settlement.grossInterest, 1, 'COMMA', 2, 'POINT')} + ' ' + ${settlement.currency}">
         +1,200.00 UAH
@@ -54,7 +60,16 @@
 
     <!-- Metric Card -->
     <div class="metric-card">
-      <div class="metric-label" th:text="'Tax Withheld (' + ${settlement.taxRate} + '%)'">Tax Withheld</div>
+      <div class="metric-label"><span th:text="'TAX (' + ${settlement.taxRate} + '%)'"/>
+
+        <!-- Tooltip 2: Currency Alternative Comparison Formula (example) -->
+        <i class="bi bi-question-circle-fill text-primary math-tooltip-trigger"
+           role="button"
+           data-formula-target="#currency-diff-template"
+           aria-label="Currency comparison formula"></i>
+
+      </div>
+
       <div class="metric-value text-red"
            th:text="'-' + ${#numbers.formatDecimal(settlement.taxWithheld, 1, 'COMMA', 2, 'POINT')} + ' ' + ${settlement.currency}">
         -50.00 UAH
@@ -118,7 +133,7 @@
           <th class="text-right">Tranche Amount</th>
           <th class="text-right">Days Held to Maturity</th>
           <th class="text-right">Gross Interest</th>
-          <th class="text-right">Net Interest (After 8% Tax)</th>
+          <th class="text-right">Net Interest (After Tax)</th>
         </tr>
         </thead>
         <tbody>
@@ -156,6 +171,81 @@
   </div>
 
 </div>
+
+<script>
+<!-- Tooltip initialization -->
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+</script>
+
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // 1. Render all LaTeX on the page once (covers standard content and hidden templates)
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false }
+        ],
+        throwOnError: false
+      });
+    }
+
+    // 2. Query all formula tooltip triggers and attach Bootstrap Tooltip dynamically
+    const triggers = document.querySelectorAll(".math-tooltip-trigger");
+
+    triggers.forEach((triggerEl) => {
+      const targetSelector = triggerEl.getAttribute("data-formula-target");
+      if (!targetSelector) return;
+
+      const templateEl = document.querySelector(targetSelector);
+      if (!templateEl) return;
+
+      new bootstrap.Tooltip(triggerEl, {
+        html: true,
+        sanitize: false, // Allows KaTeX-generated tags and attributes
+        customClass: "formula-tooltip",
+        placement: triggerEl.getAttribute("data-bs-placement") || "bottom",
+        title: () => templateEl.innerHTML
+      });
+    });
+  });
+</script>
+
+
+<!-- Container holding hidden templates for tooltips -->
+<div class="d-none">
+  <!-- Template 1 -->
+  <div id="interest-formula-template">
+    <div class="text-start">
+      <div class="py-1">
+        <p class="formula">$$Interest = \frac{I_{rate}}{100 \times D} \sum_{k \in {T}}( A_k \times d_k)$$</p>
+        <p>$D$ — days in a year,<br>
+          $T$ — all transactions,<br>
+          $d_k$ — days until maturity,<br>
+          $A_k$ — transaction amount</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Template 2 -->
+  <div id="currency-diff-template">
+    <div class="text-start">
+      <div class="py-1">
+        <p class="formula">$$TAX_{total} \sum_{k\in T} I_k \times \frac{tax}{100}$$</p>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- 2. KaTeX JS and Auto-Render Extension -->
+<link rel="stylesheet" th:href="@{/css/vendor/katex/katex.min.css}">
+<script defer th:src="@{/js/vendor/katex/katex.min.js}" ></script>
+<script defer th:src="@{/js/vendor/katex/auto-render.min.js}" ></script>
 
 <footer th:replace="elements.html :: footer"></footer>
 </body>
