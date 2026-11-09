@@ -37,6 +37,16 @@ public abstract class Account {
     @Column(nullable = false)
     private LocalDate startDate;
 
+    /**
+     * Optimistic locking version: guards the read-modify-write balance updates
+     * in the deposit/withdraw services against lost updates when two operations
+     * touch the same account concurrently. Conflicts surface as
+     * {@code OptimisticLockingFailureException}, handled by GlobalExceptionHandler.
+     */
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     public Account() {
     }
 

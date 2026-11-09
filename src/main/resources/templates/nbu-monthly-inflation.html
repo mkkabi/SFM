@@ -38,7 +38,7 @@
     <div class="card mb-4">
         <div class="card-body p-4">
             <form th:action="@{/inflation/nbu/monthly}" method="get" class="row g-3 align-items-end">
-                <div class="col-md-5 col-sm-12">
+                <div class="col-md-4 col-sm-12">
                     <label for="dateInput" class="form-label fw-semibold text-secondary">
                         <i class="bi bi-calendar-month me-1"></i> Reporting Period
                     </label>
@@ -48,6 +48,15 @@
                            class="form-control form-control-lg"
                            th:value="${selectedMonth != null ? selectedMonth : #temporals.format(#temporals.createNow(), 'yyyy-MM')}"
                            required>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <label for="regionSelect" class="form-label fw-semibold text-secondary">
+                        <i class="bi bi-geo-alt me-1"></i> Scope
+                    </label>
+                    <select id="regionSelect" name="region" class="form-select form-select-lg">
+                        <option value="" th:selected="${region == null or region == ''}">National (Ukraine-wide)</option>
+                        <option value="all" th:selected="${region == 'all'}">All regions</option>
+                    </select>
                 </div>
                 <div class="col-md-3 col-sm-6">
                     <button type="submit" class="btn btn-primary btn-lg w-100">
@@ -94,6 +103,11 @@
                     </span>
                     <span class="text-muted small">
                         Period: <strong th:text="${selectedMonth}">2026-10</strong>
+                    </span>
+                    <span class="text-muted small" th:if="${totalStoredCount != null}">
+                        &bull; Showing <strong th:text="${#lists.size(records)}">0</strong>
+                        of <strong th:text="${totalStoredCount}">0</strong> stored records
+                        <span th:if="${region == 'all'}">(all regions)</span><span th:unless="${region == 'all'}">(national)</span>
                     </span>
                 </div>
                 <!-- Optional Force Refresh -->

@@ -9,7 +9,7 @@ import com.dnu.sfm.repository.AccountRepository;
 import com.dnu.sfm.repository.TransactionRepository;
 import com.dnu.sfm.service.CurrencyAnalyticsService;
 import com.dnu.sfm.service.ExchangeRateProviderService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

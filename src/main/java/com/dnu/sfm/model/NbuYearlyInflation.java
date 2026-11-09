@@ -52,15 +52,18 @@ public class NbuYearlyInflation {
     private BigDecimal ratePercent;
 
     /**
-     * Index type code (e.g., "DTPY_").
+     * NBU index type code (e.g., "DTPY_" for the year-over-year rate,
+     * "PCCP_" for the Dec-to-Dec index level).
+     * Part of the natural business key, therefore mandatory.
      */
-    @Column(name = "tzep", length = 20)
+    @Column(name = "tzep", length = 20, nullable = false)
     private String tzep;
 
     /**
-     * Commodity group name (e.g., "Total").
+     * Commodity group code (e.g., "Total" or "01".."12").
+     * Part of the natural business key, therefore mandatory.
      */
-    @Column(name = "mcrd081", length = 100)
+    @Column(name = "mcrd081", length = 100, nullable = false)
     private String mcrd081;
 
     /**
@@ -79,13 +82,25 @@ public class NbuYearlyInflation {
 
     /**
      * Factory method to convert an NBU annual DTO into a persistent entity.
+     *
+     * @throws IllegalStateException if the DTO carries an unparseable date or is
+     *         missing the mandatory index type / commodity group, so that bad
+     *         data fails loudly instead of being persisted under the wrong year.
      */
     public static NbuYearlyInflation fromDto(NbuYearlyInflationRecordDto dto) {
         Year year = dto.toYear();
-        Integer intYear = (year != null) ? year.getValue() : null;
+        if (year == null) {
+            throw new IllegalStateException(
+                    "Unparseable NBU date '" + dto.dt() + "' - refusing to persist the record");
+        }
+        if (dto.tzep() == null || dto.tzep().isBlank()
+                || dto.mcrd081() == null || dto.mcrd081().isBlank()) {
+            throw new IllegalStateException(
+                    "NBU annual record dated " + dto.dt() + " is missing index type or commodity group");
+        }
 
         return new NbuYearlyInflation(
-                intYear,
+                year.getValue(),
                 dto.toRatePercent(),
                 dto.tzep(),
                 dto.mcrd081(),
