@@ -102,7 +102,7 @@ class LiveDataClientIntegrationTest {
         List<MonthlyInflationStatBureauRecordDto> history = statBureauClient.getHistoricalInflation(Currency.EUR);
 
         assertThat(history).isNotNull().isNotEmpty();
-        MonthlyInflationStatBureauRecordDto latest = history.getFirst();
+        MonthlyInflationStatBureauRecordDto latest = history.get(0);
 
         assertThat(latest.month()).isNotNull();
         assertThat(latest.ratePercent()).isNotNull();
