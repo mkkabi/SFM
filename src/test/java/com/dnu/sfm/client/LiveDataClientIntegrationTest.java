@@ -1,6 +1,6 @@
 package com.dnu.sfm.client;
 
-import com.dnu.sfm.dto.MonthlyInflationRecordDto;
+import com.dnu.sfm.dto.MonthlyInflationStatBureauRecordDto;
 import com.dnu.sfm.dto.NbuYearlyInflationRecordDto;
 import com.dnu.sfm.dto.NbuMonthlyInflationRecordDto;
 import com.dnu.sfm.model.Currency;
@@ -80,17 +80,17 @@ class LiveDataClientIntegrationTest {
     @Test
     @DisplayName("Verify StatBureau live endpoint returns historical records for Ukraine")
     void testLiveStatBureauHistoryUAH() {
-        List<MonthlyInflationRecordDto> history = statBureauClient.getHistoricalInflation(Currency.UAH);
+        List<MonthlyInflationStatBureauRecordDto> history = statBureauClient.getHistoricalInflation(Currency.UAH);
 
         assertThat(history).isNotNull().isNotEmpty();
-        MonthlyInflationRecordDto latest = history.get(0);
+        MonthlyInflationStatBureauRecordDto latest = history.get(0);
 
         assertThat(latest.month()).isNotNull();
         assertThat(latest.ratePercent()).isNotNull();
         System.out.printf(">> LIVE STATBUREAU SUCCESS: Latest UAH Inflation for %s is %s%%%n",
                 latest.month(), latest.ratePercent());
 
-        for (MonthlyInflationRecordDto record : history) {
+        for (MonthlyInflationStatBureauRecordDto record : history) {
             System.out.println(record);
         }
     }
@@ -99,17 +99,17 @@ class LiveDataClientIntegrationTest {
     @Test
     @DisplayName("Verify StatBureau live endpoint returns historical records for Europe")
     void testLiveStatBureauHistoryEUR() {
-        List<MonthlyInflationRecordDto> history = statBureauClient.getHistoricalInflation(Currency.EUR);
+        List<MonthlyInflationStatBureauRecordDto> history = statBureauClient.getHistoricalInflation(Currency.EUR);
 
         assertThat(history).isNotNull().isNotEmpty();
-        MonthlyInflationRecordDto latest = history.get(0);
+        MonthlyInflationStatBureauRecordDto latest = history.get(0);
 
         assertThat(latest.month()).isNotNull();
         assertThat(latest.ratePercent()).isNotNull();
         System.out.printf(">> LIVE STATBUREAU SUCCESS: Latest EUR Inflation for %s is %s%%%n",
                 latest.month(), latest.ratePercent());
 
-        for (MonthlyInflationRecordDto record : history) {
+        for (MonthlyInflationStatBureauRecordDto record : history) {
             System.out.println(record);
         }
     }
@@ -117,17 +117,17 @@ class LiveDataClientIntegrationTest {
     @Test
     @DisplayName("Verify StatBureau live endpoint returns historical records for USA")
     void testLiveStatBureauHistoryUSA() {
-        List<MonthlyInflationRecordDto> history = statBureauClient.getHistoricalInflation(Currency.USD);
+        List<MonthlyInflationStatBureauRecordDto> history = statBureauClient.getHistoricalInflation(Currency.USD);
 
         assertThat(history).isNotNull().isNotEmpty();
-        MonthlyInflationRecordDto latest = history.getFirst();
+        MonthlyInflationStatBureauRecordDto latest = history.getFirst();
 
         assertThat(latest.month()).isNotNull();
         assertThat(latest.ratePercent()).isNotNull();
         System.out.printf(">> LIVE STATBUREAU SUCCESS: Latest USD Inflation for %s is %s%%%n",
                 latest.month(), latest.ratePercent());
 
-        for (MonthlyInflationRecordDto record : history) {
+        for (MonthlyInflationStatBureauRecordDto record : history) {
             System.out.println(record);
         }
     }

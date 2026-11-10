@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  * ISO date strings, and flexible numeric or percentage string payloads.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record MonthlyInflationRecordDto(
+public record MonthlyInflationStatBureauRecordDto(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         @JsonProperty("Month")
         LocalDate month,
@@ -42,7 +42,7 @@ public record MonthlyInflationRecordDto(
      * Compact constructor: normalizes numeric scale to 4 decimal places (matching
      * the persistent model) and guarantees a valid formatted rate string.
      */
-    public MonthlyInflationRecordDto {
+    public MonthlyInflationStatBureauRecordDto {
         ratePercent = (ratePercent != null)
                 ? ratePercent.setScale(RATE_SCALE, RoundingMode.HALF_EVEN)
                 : BigDecimal.ZERO.setScale(RATE_SCALE, RoundingMode.HALF_EVEN);
@@ -59,14 +59,14 @@ public record MonthlyInflationRecordDto(
      * endpoints (e.g. StatBureau) and modern ISO JSON payloads without throwing format exceptions.
      */
     @JsonCreator
-    public static MonthlyInflationRecordDto fromJson(
+    public static MonthlyInflationStatBureauRecordDto fromJson(
             @JsonProperty("Month") Object monthRaw,
             @JsonProperty("InflationRate") Object rateRaw,
             @JsonProperty("InflationRateFormatted") String formattedRateRaw
     ) {
         LocalDate parsedMonth = parseDate(monthRaw);
         BigDecimal parsedRate = parseRate(rateRaw);
-        return new MonthlyInflationRecordDto(parsedMonth, parsedRate, formattedRateRaw);
+        return new MonthlyInflationStatBureauRecordDto(parsedMonth, parsedRate, formattedRateRaw);
     }
 
     /**
