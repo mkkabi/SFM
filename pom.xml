@@ -73,11 +73,18 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.projectlombok</groupId>-->
+<!--			<artifactId>lombok</artifactId>-->
+<!--			<optional>true</optional>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<optional>true</optional>
+			<version>1.18.34</version> <!-- Поставьте актуальную версию -->
+			<scope>provided</scope>
 		</dependency>
+
 
 		<!-- Testing Stack -->
 		<dependency>
@@ -94,7 +101,42 @@
 		</dependency>
 
 
+		<!-- Source: https://mvnrepository.com/artifact/org.graalvm.buildtools/native-maven-plugin -->
+		<dependency>
+			<groupId>org.graalvm.buildtools</groupId>
+			<artifactId>native-maven-plugin</artifactId>
+			<version>1.1.18</version>
+			<scope>compile</scope>
+		</dependency>
+
 	</dependencies>
+
+
+	<profiles>
+		<profile>
+			<id>native</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.graalvm.buildtools</groupId>
+						<artifactId>native-maven-plugin</artifactId>
+						<version>1.1.18</version>
+						<extensions>true</extensions>
+						<executions>
+							<execution>
+								<id>build-native</id>
+								<goals>
+									<goal>compile-no-fork</goal>
+								</goals>
+								<phase>package</phase>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 
 	<build>
 		<plugins>
