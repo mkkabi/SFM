@@ -3,6 +3,7 @@ package com.dnu.sfm.controller;
 
 import com.dnu.sfm.client.NbuExchangeRateClient;
 import com.dnu.sfm.model.ExchangeRate;
+import com.dnu.sfm.service.PortfolioValuationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -22,6 +23,7 @@ public class HomeController {
     private static final Set<String> FEATURED_CURRENCIES = Set.of("USD", "EUR", "PLN", "GBP");
 
     private final NbuExchangeRateClient nbuExchangeRateClient;
+    private final PortfolioValuationService portfolioValuationService;
 
     @GetMapping({"/", "home"})
     public String home(Model model) {
@@ -41,6 +43,12 @@ public class HomeController {
 
         model.addAttribute("ratesDate", today);
         model.addAttribute("exchangeRates", todayRates);
+
+        try {
+            model.addAttribute("portfolioSummary", portfolioValuationService.getPortfolioSummary());
+        } catch (Exception ex) {
+            log.warn("Failed to compute portfolio summary: {}", ex.getMessage());
+        }
 
         return "home";
     }

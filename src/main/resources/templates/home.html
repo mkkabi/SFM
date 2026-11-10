@@ -94,6 +94,100 @@
         </div>
     </div>
 
+    <!-- ============================================== -->
+    <!--  TOTAL BALANCE SECTION: ALL ACCOUNTS IN UAH    -->
+    <!-- ============================================== -->
+    <div class="card border-0 shadow-sm bg-white mb-4">
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <!-- Left: grand total valued at the current NBU rate -->
+                <div class="col-lg-4">
+                    <h6 class="text-uppercase text-muted small fw-semibold mb-2">
+                        <i class="bi bi-wallet2 text-primary me-1"></i> Total Balance (All Accounts)
+                    </h6>
+
+                    <!-- Grand total in UAH -->
+                    <div th:if="${portfolioSummary != null and portfolioSummary.totalInUah != null}">
+                        <div class="display-5 fw-bold text-dark lh-1"
+                             th:text="${#numbers.formatDecimal(portfolioSummary.totalInUah, 1, 'COMMA', 2, 'POINT')} + ' ₴'">
+                            0.00 ₴
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Current amount across <strong th:text="${portfolioSummary.accountCount}">0</strong> account(s)
+                            in all currencies, converted at the NBU rate for
+                            <span th:text="${#temporals.format(portfolioSummary.ratesDate, 'dd.MM.yyyy')}">today</span>.
+                            Deposit interest is not included.
+                        </small>
+                    </div>
+
+                    <!-- Fallback: balances loaded, but NBU rates unavailable -->
+                    <div th:if="${portfolioSummary != null and portfolioSummary.totalInUah == null}">
+                        <div class="fs-4 fw-bold text-warning-emphasis">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> NBU rate unavailable
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            Per-currency balances are listed on the right; the UAH total will appear
+                            once official rates are available from bank.gov.ua.
+                        </small>
+                    </div>
+
+                    <!-- Fallback: summary could not be computed at all -->
+                    <div th:if="${portfolioSummary == null}">
+                        <div class="fs-4 fw-bold text-secondary">
+                            <i class="bi bi-exclamation-circle me-1"></i> Total unavailable
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            Account balances could not be loaded. Please try again later.
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Right: per-currency breakdown -->
+                <div class="col-lg-8">
+                    <h6 class="text-uppercase text-muted small fw-semibold mb-2">
+                        <i class="bi bi-cash-coin text-primary me-1"></i> Balances by Currency
+                    </h6>
+                    <div class="vstack gap-2" th:if="${portfolioSummary != null}">
+                        <div th:each="entry : ${portfolioSummary.balancesByCurrency}"
+                             class="d-flex justify-content-between align-items-center p-2 rounded border bg-white">
+                            <div class="d-flex align-items-center">
+                                <div class="currency-badge rounded-circle bg-light text-primary fw-bold d-flex align-items-center justify-content-center border me-3"
+                                     th:text="${entry.key.name()}">USD</div>
+                                <div>
+                                    <span class="fw-bold d-block text-dark" th:text="${entry.key.name()}">USD</span>
+                                    <small class="text-muted">
+                                        Balance:
+                                        <span class="text-dark"
+                                              th:text="${#numbers.formatDecimal(entry.value, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold text-dark d-block"
+                                      th:if="${portfolioSummary.ratesToUah[entry.key] != null}"
+                                      th:text="'≈ ' + ${#numbers.formatDecimal(entry.value * portfolioSummary.ratesToUah[entry.key], 1, 'COMMA', 2, 'POINT')} + ' ₴'">
+                                    ≈ 0.00 ₴
+                                </span>
+                                <small class="text-muted"
+                                       th:if="${portfolioSummary.ratesToUah[entry.key] != null and entry.key.name() != 'UAH'}"
+                                       th:text="'Rate: ' + ${#numbers.formatDecimal(portfolioSummary.ratesToUah[entry.key], 1, 'COMMA', 2, 'POINT')} + ' ₴'">
+                                    Rate: 41.50 ₴
+                                </small>
+                                <small class="text-muted d-block"
+                                       th:if="${entry.key.name() == 'UAH'}">Base currency</small>
+                                <small class="text-warning-emphasis d-block"
+                                       th:if="${portfolioSummary.ratesToUah[entry.key] == null}">
+                                    <i class="bi bi-exclamation-circle me-1"></i>NBU rate unavailable
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Quick Summary Cards -->
     <div class="row g-3">
         <div class="col-md-4">
