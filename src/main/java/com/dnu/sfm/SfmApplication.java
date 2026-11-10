@@ -1,5 +1,7 @@
 package com.dnu.sfm;
 
+
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -11,6 +13,11 @@ import org.springframework.cache.annotation.EnableCaching;
  */
 @EnableCaching
 @SpringBootApplication
+// Указываем корректный класс диалекта с .community.
+@RegisterReflectionForBinding({
+        org.sqlite.JDBC.class,
+        org.hibernate.community.dialect.SQLiteDialect.class
+})
 public class SfmApplication {
 
         public static void main(String[] args) {
