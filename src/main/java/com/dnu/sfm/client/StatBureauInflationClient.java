@@ -1,6 +1,6 @@
 package com.dnu.sfm.client;
 
-import com.dnu.sfm.dto.MonthlyInflationRecordDto;
+import com.dnu.sfm.dto.MonthlyInflationStatBureauRecordDto;
 import com.dnu.sfm.model.Currency;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +34,7 @@ public class StatBureauInflationClient {
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
 
+    // don't use for anything other than USD - OLD DATA!!!
     public StatBureauInflationClient(RestClient.Builder builder, ObjectMapper objectMapper) {
         this.objectMapper = (objectMapper != null)
                 ? objectMapper
@@ -50,7 +51,7 @@ public class StatBureauInflationClient {
      * Fetches monthly historical inflation rates for a given currency/country slug.
      * Safely parses ASP.NET "/Date(...)/" formats and ISO date strings.
      */
-    public List<MonthlyInflationRecordDto> getHistoricalInflation(Currency currency) {
+    public List<MonthlyInflationStatBureauRecordDto> getHistoricalInflation(Currency currency) {
         if (currency == null || currency.getCountrySlug() == null) {
             log.warn("Cannot fetch inflation: currency or country slug is null");
             return Collections.emptyList();
@@ -132,8 +133,8 @@ public class StatBureauInflationClient {
         return computeAnnualRateFromMonthly(currency, year);
     }
 
-    private List<MonthlyInflationRecordDto> parseMonthlyRecords(String json) {
-        List<MonthlyInflationRecordDto> records = new ArrayList<>();
+    private List<MonthlyInflationStatBureauRecordDto> parseMonthlyRecords(String json) {
+        List<MonthlyInflationStatBureauRecordDto> records = new ArrayList<>();
         try {
             JsonNode rootNode = objectMapper.readTree(json);
             if (!rootNode.isArray()) {
@@ -150,7 +151,7 @@ public class StatBureauInflationClient {
                 BigDecimal rate = extractRate(node.get("InflationRate"));
                 String formatted = extractFormattedRate(node.get("InflationRateFormatted"), rate);
 
-                records.add(new MonthlyInflationRecordDto(month, rate, formatted));
+                records.add(new MonthlyInflationStatBureauRecordDto(month, rate, formatted));
             }
         } catch (Exception ex) {
             log.error("Error parsing StatBureau monthly JSON response: {}", ex.getMessage());
@@ -227,12 +228,12 @@ public class StatBureauInflationClient {
     }
 
     private BigDecimal computeAnnualRateFromMonthly(Currency currency, int year) {
-        List<MonthlyInflationRecordDto> history = getHistoricalInflation(currency);
+        List<MonthlyInflationStatBureauRecordDto> history = getHistoricalInflation(currency);
         if (history.isEmpty()) {
             return null;
         }
 
-        List<MonthlyInflationRecordDto> yearRecords = history.stream()
+        List<MonthlyInflationStatBureauRecordDto> yearRecords = history.stream()
                 .filter(r -> r.month() != null && r.month().getYear() == year)
                 .toList();
 
@@ -242,7 +243,7 @@ public class StatBureauInflationClient {
         }
 
         BigDecimal multiplier = BigDecimal.ONE;
-        for (MonthlyInflationRecordDto record : yearRecords) {
+        for (MonthlyInflationStatBureauRecordDto record : yearRecords) {
             BigDecimal monthlyFraction = record.ratePercent().divide(BigDecimal.valueOf(100), MC);
             multiplier = multiplier.multiply(BigDecimal.ONE.add(monthlyFraction), MC);
         }
