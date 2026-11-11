@@ -14,9 +14,16 @@ import org.springframework.cache.annotation.EnableCaching;
 @EnableCaching
 @SpringBootApplication
 // Указываем корректный класс диалекта с .community.
+// Добавляем внутренние персистеры Hibernate в регистрацию рефлексии
 @RegisterReflectionForBinding({
         org.sqlite.JDBC.class,
-        org.hibernate.community.dialect.SQLiteDialect.class
+        org.hibernate.community.dialect.SQLiteDialect.class,
+        // Классы, отвечающие за стратегию JOINED и SINGLE_TABLE наследования сущностей:
+        org.hibernate.persister.entity.JoinedSubclassEntityPersister.class,
+        org.hibernate.persister.entity.SingleTableEntityPersister.class,
+        org.hibernate.persister.entity.UnionSubclassEntityPersister.class,
+        // Добавляем утилиту списков Thymeleaf для сохранения её методов:
+        org.thymeleaf.expression.Lists.class
 })
 public class SfmApplication {
 
