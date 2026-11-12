@@ -106,12 +106,47 @@
                         <i class="bi bi-wallet2 text-primary me-1"></i> Total Balance (All Accounts)
                     </h6>
 
-                    <!-- Grand total in UAH -->
+                    <!-- Grand total in UAH + equivalents in all other currencies -->
                     <div th:if="${portfolioSummary != null and portfolioSummary.totalInUah != null}">
-                        <div class="display-5 fw-bold text-dark lh-1"
-                             th:text="${#numbers.formatDecimal(portfolioSummary.totalInUah, 1, 'COMMA', 2, 'POINT')} + ' ₴'">
-                            0.00 ₴
+<!--                        <div class="display-5 fw-bold text-dark lh-1"-->
+<!--                             th:text="${#numbers.formatDecimal(portfolioSummary.totalInUah, 1, 'COMMA', 2, 'POINT')} + ' ₴'">-->
+<!--                            0.00 ₴-->
+<!--                        </div>-->
+
+                        <!-- Totals in all other currencies, styled like the "Balances by Currency" rows -->
+                        <div class="vstack gap-2 mt-3">
+                            <div th:each="entry : ${portfolioSummary.balancesByCurrency}"
+                                 th:with="currencyCode=${entry.key.name()},
+                                          currencySymbol=${entry.key.name() == 'USD' ? '$' : (entry.key.name() == 'EUR' ? '€' : (entry.key.name() == 'UAH' ? '₴' : entry.key.name()))},
+                                          rateToUah=${portfolioSummary.ratesToUah[entry.key]}"
+                                 class="d-flex justify-content-between align-items-center p-2 rounded border bg-white">
+                                <div class="d-flex align-items-center">
+                                    <div class="currency-badge rounded-circle bg-light text-primary fw-bold d-flex align-items-center justify-content-center border me-3"
+                                         th:text="${currencyCode}">USD</div>
+                                    <div>
+                                        <span class="fw-bold d-block text-dark" th:text="${currencyCode}">USD</span>
+                                        <small class="text-muted">Total</small>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="fw-bold text-dark d-block"
+                                          th:if="${rateToUah != null}"
+                                          th:text="'≈ ' + ${#numbers.formatDecimal(portfolioSummary.totalInUah.divide(rateToUah, 2, T(java.math.RoundingMode).HALF_UP), 1, 'COMMA', 2, 'POINT')} + ' ' + ${currencySymbol}">
+                                        ≈ 0.00 $
+                                    </span>
+                                    <small class="text-muted"
+                                           th:if="${rateToUah != null}"
+                                           th:text="'Rate: ' + ${#numbers.formatDecimal(rateToUah, 1, 'COMMA', 2, 'POINT')} + ' ₴'">
+                                        Rate: 41.50 ₴
+                                    </small>
+                                    <small class="text-warning-emphasis d-block"
+                                           th:if="${rateToUah == null}">
+                                        <i class="bi bi-exclamation-circle me-1"></i>NBU rate unavailable
+                                    </small>
+                                </div>
+                            </div>
                         </div>
+
                         <small class="text-muted d-block mt-2">
                             <i class="bi bi-info-circle me-1"></i>
                             Current amount across <strong th:text="${portfolioSummary.accountCount}">0</strong> account(s)
@@ -144,11 +179,11 @@
                 </div>
 
                 <!-- Right: per-currency breakdown -->
-                <div class="col-lg-8">
+                <div class="col-lg-4">
                     <h6 class="text-uppercase text-muted small fw-semibold mb-2">
                         <i class="bi bi-cash-coin text-primary me-1"></i> Balances by Currency
                     </h6>
-                    <div class="vstack gap-2" th:if="${portfolioSummary != null}">
+                    <div class="vstack gap-2 mt-3" th:if="${portfolioSummary != null}">
                         <div th:each="entry : ${portfolioSummary.balancesByCurrency}"
                              class="d-flex justify-content-between align-items-center p-2 rounded border bg-white">
                             <div class="d-flex align-items-center">
