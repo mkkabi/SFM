@@ -1,5 +1,6 @@
 package com.dnu.sfm.client;
 
+import com.dnu.sfm.config.StatBureauApiProperties;
 import com.dnu.sfm.dto.MonthlyInflationStatBureauRecordDto;
 import com.dnu.sfm.model.Currency;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,7 +28,6 @@ import java.util.regex.Pattern;
 @Component
 public class StatBureauInflationClient {
 
-    private static final String BASE_URL = "https://www.statbureau.org";
     private static final Pattern ASPNET_DATE_PATTERN = Pattern.compile("^/Date\\((-?\\d+)(?:[+-]\\d+)?\\)/$");
     private static final MathContext MC = MathContext.DECIMAL64;
 
@@ -35,13 +35,14 @@ public class StatBureauInflationClient {
     private final ObjectMapper objectMapper;
 
     // don't use for anything other than USD - OLD DATA!!!
-    public StatBureauInflationClient(RestClient.Builder builder, ObjectMapper objectMapper) {
+    public StatBureauInflationClient(RestClient.Builder builder, ObjectMapper objectMapper,
+                                     StatBureauApiProperties properties) {
         this.objectMapper = (objectMapper != null)
                 ? objectMapper
                 : new ObjectMapper().registerModule(new JavaTimeModule());
 
         this.restClient = builder
-                .baseUrl(BASE_URL)
+                .baseUrl(properties.getBaseUrl())
                 .defaultHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 SFM/1.0")
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE + ", text/plain, */*")
                 .build();

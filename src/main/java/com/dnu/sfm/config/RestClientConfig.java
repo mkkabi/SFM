@@ -1,6 +1,7 @@
 package com.dnu.sfm.config;
 
 import org.springframework.boot.autoconfigure.web.client.RestClientBuilderConfigurer;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -19,8 +20,13 @@ import java.time.Duration;
  * indefinitely. This bean replaces Spring Boot's auto-configured
  * {@code RestClient.Builder} prototype with one that always applies sane
  * connect/read timeouts.
+ * <p>
+ * {@link WorldBankApiProperties} and {@link StatBureauApiProperties} are enabled
+ * here so the World Bank and StatBureau clients can inject their base URLs
+ * (and the World Bank indicator code) from {@code application.properties}.
  */
 @Configuration
+@EnableConfigurationProperties({WorldBankApiProperties.class, StatBureauApiProperties.class})
 public class RestClientConfig {
 
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);

@@ -1,42 +1,42 @@
-name: Build Native Exe for Windows
-
-on:
-  push:
-    branches: [ "master", "main" ] # Сборка будет запускаться при пуше в эти ветки
-  workflow_dispatch: # Позволит запускать сборку вручную кнопкой в интерфейсе GitHub
-
-jobs:
-  build:
-    runs-on: windows-latest # Запуск на чистой Windows-машине со всеми компиляторами C++
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Set up GraalVM JDK 21
-      uses: graalvm/setup-graalvm@v1
-      with:
-        java-version: '21'
-        distribution: 'graalvm'
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        native-image-job-reports: 'true'
-
-    # Кэширование зависимостей Maven, чтобы сборка шла быстрее
-    - name: Cache Maven packages
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
-
-    # Запуск сборки нативного файла. Переменные x64 компилятора VS на GitHub уже настроены
-    - name: Build Native Image with Maven
-      run: mvn clean package -Pnative
-
-    # Загрузка готового .exe файла в артефакты GitHub, чтобы вы могли его скачать
-    - name: Upload Windows Exe Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: windows-native-app
-        path: target/*.exe
+#name: Build Native Exe for Windows
+#
+#on:
+#  push:
+#    branches: [ "master", "main" ] # Сборка будет запускаться при пуше в эти ветки
+#  workflow_dispatch: # Позволит запускать сборку вручную кнопкой в интерфейсе GitHub
+#
+#jobs:
+#  build:
+#    runs-on: windows-latest # Запуск на чистой Windows-машине со всеми компиляторами C++
+#
+#    steps:
+#    - name: Checkout repository
+#      uses: actions/checkout@v4
+#
+#    - name: Set up GraalVM JDK 21
+#      uses: graalvm/setup-graalvm@v1
+#      with:
+#        java-version: '21'
+#        distribution: 'graalvm'
+#        github-token: ${{ secrets.GITHUB_TOKEN }}
+#        native-image-job-reports: 'true'
+#
+#    # Кэширование зависимостей Maven, чтобы сборка шла быстрее
+#    - name: Cache Maven packages
+#      uses: actions/cache@v4
+#      with:
+#        path: ~/.m2/repository
+#        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+#        restore-keys: |
+#          ${{ runner.os }}-maven-
+#
+#    # Запуск сборки нативного файла. Переменные x64 компилятора VS на GitHub уже настроены
+#    - name: Build Native Image with Maven
+#      run: mvn clean package -Pnative
+#
+#    # Загрузка готового .exe файла в артефакты GitHub, чтобы вы могли его скачать
+#    - name: Upload Windows Exe Artifact
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: windows-native-app
+#        path: target/*.exe
