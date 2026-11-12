@@ -21,11 +21,12 @@ import java.time.Duration;
  * {@code RestClient.Builder} prototype with one that always applies sane
  * connect/read timeouts.
  * <p>
- * {@link WorldBankApiProperties} is enabled here so the World Bank client can
- * inject its base URL and indicator code from {@code application.properties}.
+ * {@link WorldBankApiProperties} and {@link StatBureauApiProperties} are enabled
+ * here so the World Bank and StatBureau clients can inject their base URLs
+ * (and the World Bank indicator code) from {@code application.properties}.
  */
 @Configuration
-@EnableConfigurationProperties(WorldBankApiProperties.class)
+@EnableConfigurationProperties({WorldBankApiProperties.class, StatBureauApiProperties.class})
 public class RestClientConfig {
 
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);

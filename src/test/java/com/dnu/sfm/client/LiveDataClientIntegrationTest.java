@@ -1,5 +1,6 @@
 package com.dnu.sfm.client;
 
+import com.dnu.sfm.config.StatBureauApiProperties;
 import com.dnu.sfm.dto.MonthlyInflationStatBureauRecordDto;
 import com.dnu.sfm.dto.NbuYearlyInflationRecordDto;
 import com.dnu.sfm.dto.NbuMonthlyInflationRecordDto;
@@ -31,7 +32,7 @@ class LiveDataClientIntegrationTest {
         RestClient.Builder builder = RestClient.builder();
         ObjectMapper objectMapper = new ObjectMapper();
         nbuClient = new NbuExchangeRateClient(builder);
-        statBureauClient = new StatBureauInflationClient(builder, objectMapper);
+        statBureauClient = new StatBureauInflationClient(builder, objectMapper, new StatBureauApiProperties());
         nbuInflationClient = new NbuInflationClient(builder);
     }
 
