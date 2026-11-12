@@ -15,6 +15,9 @@ import java.time.LocalDate;
 @Table(name = "deposit_accounts")
 public class DepositAccount extends Account {
 
+    // TODO
+    // needs to recalculate interest on term extension
+
     /**
      * Annual nominal interest rate as a percentage (e.g., 5.50 for 5.50% p.a.).
      */
