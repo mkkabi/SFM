@@ -2,6 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{elements.html :: head('Update Deposit Account')}">
+  <title>Update Deposit Account</title>
 </head>
 
 <body>
@@ -45,42 +46,27 @@
             <span th:text="|Term: ${account.startDate} &rarr; ${account.maturityDate}|">Term: 2026-01-01 &rarr; 2027-01-01</span>
           </div>
           <div>
-            <span th:if="${account.maturityDate.equals(T(java.time.LocalDate).now())}"
-                  class="badge text-bg-success">Maturity date reached &ndash; withdrawals allowed</span>
-            <span th:unless="${account.maturityDate.equals(T(java.time.LocalDate).now())}"
+            <span th:if="${maturityReached}"
+                  class="badge text-bg-success">Maturity date reached &ndash; close &amp; withdraw allowed</span>
+            <span th:unless="${maturityReached}"
                   class="badge text-bg-light text-dark border">Funds locked until maturity</span>
           </div>
         </div>
 
-        <!-- Flash error set by DepositAccountController after a failed update -->
+        <!-- Flash error set by DepositAccountController after a failed operation -->
         <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
           <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMessage}">Error</span>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
-        <form th:action="@{/deposit-accounts/{id}/update(id=${account.id})}" method="post">
+        <!-- Add funds to the deposit -->
+        <form th:action="@{/deposit-accounts/{id}/update(id=${account.id})}" method="post"
+              th:if="${account.status.name() == 'ACTIVE'}">
+          <input type="hidden" name="operation" value="DEPOSIT">
 
           <div class="row g-3">
-            <!-- Operation -->
-            <div class="col-md-6">
-              <label for="operation" class="form-label">Operation</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-arrow-left-right"></i></span>
-                <select id="operation" name="operation" class="form-select">
-                  <option value="DEPOSIT">Deposit (add funds)</option>
-                  <option value="WITHDRAW">Withdraw (on or after maturity date)</option>
-                  <option value="EXTEND_MATURITY"
-                          th:text="|Extend term (+${T(java.time.temporal.ChronoUnit).DAYS.between(account.startDate, account.maturityDate)} days)|">
-                    Extend term (+365 days)
-                  </option>
-                </select>
-              </div>
-              <div class="form-text">Extending doubles the term: new maturity = maturity + (maturity &minus; start).</div>
-            </div>
-
-            <!-- Amount -->
-            <div class="col-md-6">
-              <label for="amount" class="form-label">Amount</label>
+            <div class="col-md-12">
+              <label for="amount" class="form-label">Add Funds (deposit more money)</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-cash-stack"></i></span>
                 <input type="number"
@@ -90,28 +76,92 @@
                        name="amount"
                        class="form-control"
                        placeholder="0.00">
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-plus-lg me-1"></i> Deposit
+                </button>
               </div>
               <div class="form-text" th:text="|Available balance: ${account.balance} ${account.currency}|">Available balance: 0.00 USD</div>
             </div>
           </div>
+        </form>
 
-          <hr class="my-4">
+        <!-- Close deposit & withdraw (only when the maturity date has been reached) -->
+        <div th:if="${maturityReached and account.status.name() == 'ACTIVE'}" class="mt-4">
+          <hr class="my-2">
+          <h5 class="mt-3 mb-1 fw-bold"><i class="bi bi-unlock me-2"></i>Close Deposit &amp; Withdraw</h5>
+          <p class="text-muted small mb-3">
+            The maturity date has been reached. Closing is final: the whole deposit is paid out and the
+            account status becomes <strong>CLOSED</strong>. The payout is transferred to the account you select below.
+          </p>
 
-          <!-- Actions -->
-          <div class="d-flex justify-content-end gap-2">
-            <a th:href="@{/accounts}" class="btn btn-outline-secondary px-4">Cancel</a>
-            <button type="submit" class="btn btn-primary px-4 fw-semibold">
-              <i class="bi bi-check2-circle me-1"></i> Apply Changes
-            </button>
+          <!-- Payout preview (principal + net interest after tax) -->
+          <div class="row g-3 mb-3" th:if="${settlement != null}">
+            <div class="col-md-4">
+              <div class="border rounded-3 p-3 text-center">
+                <div class="text-muted small">Principal</div>
+                <div class="fw-semibold fs-5" th:text="|${settlement.totalPrincipal()} ${settlement.currency}|">1000.00 USD</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="border rounded-3 p-3 text-center">
+                <div class="text-muted small">Net Interest (after tax)</div>
+                <div class="fw-semibold fs-5 text-success" th:text="|+${settlement.netInterest()} ${settlement.currency}|">+27.25 USD</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="border rounded-3 p-3 text-center bg-light">
+                <div class="text-muted small">Total Payout</div>
+                <div class="fw-bold fs-5" th:text="|${settlement.finalPayout()} ${settlement.currency}|">1027.25 USD</div>
+              </div>
+            </div>
           </div>
 
-        </form>
+          <form th:action="@{/deposit-accounts/{id}/close(id=${account.id})}" method="post" class="mt-2">
+            <div class="row g-3 align-items-end">
+              <div class="col-md-8">
+                <label for="targetAccountId" class="form-label">Transfer Payout To <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-wallet2"></i></span>
+                  <select id="targetAccountId" name="targetAccountId" class="form-select" required>
+                    <option value="">-- select an account to receive the funds --</option>
+                    <option th:each="t : ${targetAccounts}"
+                            th:value="${t.id}"
+                            th:text="|${t.name} - balance ${t.balance} ${t.currency}|">
+                      Wallet (USD) - balance 0.00 USD
+                    </option>
+                  </select>
+                </div>
+                <div class="form-text">Only active cash accounts in the deposit currency can receive the payout.</div>
+              </div>
+              <div class="col-md-4 d-grid">
+                <button type="submit" class="btn btn-danger fw-semibold"
+                        onclick="return confirm('Close this deposit and transfer the full payout to the selected account?');">
+                  <i class="bi bi-lock-fill me-1"></i> Close Deposit &amp; Withdraw
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Not matured yet: explain when withdrawal becomes possible -->
+        <div th:if="${!maturityReached and account.status.name() == 'ACTIVE'}" class="alert alert-light border mt-4 mb-0" role="alert">
+          <i class="bi bi-lock me-2"></i>
+          The deposit can be closed and withdrawn after the maturity date
+          (<strong th:text="${account.maturityDate}">2027-01-01</strong>).
+          The payout (principal + net interest) will be transferred to an account of your choice.
+        </div>
+
+        <hr class="my-4">
+
+        <!-- Actions -->
+        <div class="d-flex justify-content-end gap-2">
+          <a th:href="@{/accounts}" class="btn btn-outline-secondary px-4">Back to Accounts</a>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <footer th:replace="~{elements.html :: footer}"></footer>
-
 </body>
 </html>

@@ -2,6 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{elements.html :: head('Add Deposit Account')}">
+  <title>Add Deposit Account</title>
 </head>
 
 <body>
@@ -141,23 +142,28 @@
               </div>
             </div>
 
-            <!-- Maturity Date -->
+            <!-- Term in months (maturity date is derived from start date + term) -->
             <div class="col-md-6">
-              <label for="maturityDate" class="form-label">Maturity Date <span class="text-danger">*</span></label>
+              <label for="termMonths" class="form-label">Term (months) <span class="text-danger">*</span></label>
               <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
-                <input type="date"
-                       id="maturityDate"
-                       th:field="*{maturityDate}"
+                <span class="input-group-text"><i class="bi bi-hourglass-split"></i></span>
+                <input type="number"
+                       step="1"
+                       min="1"
+                       max="600"
+                       id="termMonths"
+                       th:field="*{termMonths}"
                        class="form-control"
-                       th:errorclass="is-invalid">
+                       th:errorclass="is-invalid"
+                       placeholder="e.g. 12">
+                <span class="input-group-text">months</span>
               </div>
-              <div class="form-text">Must be strictly after the start date.</div>
-              <div class="invalid-feedback" th:if="${#fields.hasErrors('maturityDate')}" th:errors="*{maturityDate}">
-                Please specify a valid maturity date.
+              <div class="form-text">Maturity date: <strong id="maturityPreview">select a start date and term</strong></div>
+              <div class="invalid-feedback" th:if="${#fields.hasErrors('termMonths')}" th:errors="*{termMonths}">
+                Please specify a valid term in months (at least 1).
               </div>
               <div class="text-danger small" th:if="${#fields.hasErrors('dateRangeValid')}" th:errors="*{dateRangeValid}">
-                Maturity date must be strictly after the start date.
+                The term must be at least 1 month so that the maturity date falls after the start date.
               </div>
             </div>
           </div>
@@ -178,7 +184,38 @@
   </div>
 </div>
 
-<footer th:replace="~{elements.html :: footer}"></footer>
+<!-- Live maturity date preview: start date + term (months), matching
+     LocalDate.plusMonths day-of-month clamping on the server -->
+<script>
+  (function () {
+    const startEl = document.getElementById('startDate');
+    const termEl = document.getElementById('termMonths');
+    const preview = document.getElementById('maturityPreview');
 
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function updatePreview() {
+      const term = parseInt(termEl.value, 10);
+      if (!startEl.value || isNaN(term) || term < 1) {
+        preview.textContent = 'select a start date and term';
+        return;
+      }
+      const start = new Date(startEl.value + 'T00:00:00');
+      const targetMonthIndex = start.getMonth() + term;
+      const year = start.getFullYear() + Math.floor(targetMonthIndex / 12);
+      const month = ((targetMonthIndex % 12) + 12) % 12;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const day = Math.min(start.getDate(), daysInMonth);
+      const maturity = new Date(year, month, day);
+      preview.textContent = maturity.getFullYear() + '-' + pad(maturity.getMonth() + 1) + '-' + pad(maturity.getDate());
+    }
+
+    startEl.addEventListener('change', updatePreview);
+    termEl.addEventListener('input', updatePreview);
+    updatePreview();
+  })();
+</script>
+
+<footer th:replace="~{elements.html :: footer}"></footer>
 </body>
 </html>

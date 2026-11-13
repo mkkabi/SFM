@@ -2,16 +2,23 @@ package com.dnu.sfm.service.impl;
 
 import com.dnu.sfm.dto.AccountDto;
 import com.dnu.sfm.dto.DepositAccountDto;
+import com.dnu.sfm.dto.DepositCloseResultDto;
+import com.dnu.sfm.dto.DepositSettlementDto;
+import com.dnu.sfm.model.Account;
 import com.dnu.sfm.model.AccountStatus;
+import com.dnu.sfm.model.CashAccount;
+import com.dnu.sfm.model.Currency;
 import com.dnu.sfm.model.DepositAccount;
 import com.dnu.sfm.model.TransactionType;
 import com.dnu.sfm.exception.AccountNotFoundException;
+import com.dnu.sfm.exception.CurrencyMismatchException;
 import com.dnu.sfm.exception.InactiveAccountException;
 import com.dnu.sfm.exception.MaturityNotReachedException;
 import com.dnu.sfm.repository.AccountRepository;
 import com.dnu.sfm.repository.DepositAccountRepository;
 import com.dnu.sfm.service.DepositAccountService;
 import com.dnu.sfm.service.TransactionService;
+import com.dnu.sfm.util.TransferReferences;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +26,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
@@ -44,6 +52,7 @@ public class DepositAccountServiceImpl implements DepositAccountService {
     private final AccountRepository accountRepository;
     private final DepositAccountRepository depositAccountRepository;
     private final TransactionService transactionService;
+    private final DepositInterestCalculatorService depositInterestCalculatorService;
 
 
 
@@ -132,6 +141,96 @@ public class DepositAccountServiceImpl implements DepositAccountService {
                 amount, savedAccount.getCurrency(), id, savedAccount.getBalance());
 
         return savedAccount;
+    }
+
+    @Override
+    @CacheEvict(value = "depositSettlements", key = "#id")
+    public DepositCloseResultDto closeDepositAccountAndTransfer(Long id, Long targetAccountId) {
+        Objects.requireNonNull(targetAccountId, "Target account id must not be null");
+
+        DepositAccount account = getActiveDepositAccount(id);
+
+        // The deposit is locked until its maturity date has passed; from that
+        // day on the user may close it and withdraw the full payout.
+        LocalDate today = LocalDate.now();
+        if (today.isBefore(account.getMaturityDate())) {
+            throw new MaturityNotReachedException(
+                    "The deposit '" + account.getName() + "' can be closed and withdrawn only after "
+                            + "the maturity date (" + account.getMaturityDate() + "). Today is " + today);
+        }
+
+        if (targetAccountId.equals(account.getId())) {
+            throw new IllegalArgumentException(
+                    "Cannot pay out a deposit into itself: choose another account to receive the funds.");
+        }
+
+        Account target = accountRepository.findById(targetAccountId)
+                .orElseThrow(() -> new AccountNotFoundException(
+                        "Target account with id " + targetAccountId + " not found"));
+
+        // The payout must land on a cash account the user controls
+        if (!(target instanceof CashAccount)) {
+            throw new IllegalArgumentException(
+                    "The payout must be transferred to a cash account, but '"
+                            + target.getName() + "' is a deposit account.");
+        }
+
+        if (target.getStatus() != AccountStatus.ACTIVE) {
+            throw new InactiveAccountException(
+                    "Target account '" + target.getName() + "' is " + target.getStatus()
+                            + " - funds can be transferred only to ACTIVE accounts");
+        }
+
+        if (target.getCurrency() != account.getCurrency()) {
+            throw new CurrencyMismatchException(
+                    "Currency mismatch: the deposit is in " + account.getCurrency()
+                            + " but the target account is in " + target.getCurrency()
+                            + ". Funds can be transferred only between accounts of the same currency.");
+        }
+
+        // Payout = principal (current balance) + net interest after tax,
+        // as computed by the settlement calculator.
+        DepositSettlementDto settlement = depositInterestCalculatorService.calculateSettlement(id);
+        BigDecimal principal = account.getBalance();
+        BigDecimal netInterest = settlement.netInterest() != null
+                ? settlement.netInterest() : BigDecimal.ZERO;
+        BigDecimal payout = principal.add(netInterest).setScale(2, RoundingMode.HALF_EVEN);
+
+        // Empty and close the deposit: the balance held the principal, the
+        // interest was tracked on top of it, so after the payout the
+        // remaining balance is exactly zero.
+        account.setBalance(BigDecimal.ZERO);
+        account.setStatus(AccountStatus.CLOSED);
+        account.setAccruedInterest(BigDecimal.ZERO);
+        DepositAccount savedDeposit = depositAccountRepository.save(account);
+
+        // Credit the payout to the selected target account
+        target.setBalance(target.getBalance().add(payout));
+        Account savedTarget = accountRepository.save(target);
+
+        // One reference for both legs so the payout shows up on the transfer history page
+        String transferRef = TransferReferences.generate();
+
+        // Register the transaction in BOTH accounts: debit (outgoing) on the
+        // deposit and credit (incoming) on the target
+        transactionService.recordTransaction(savedDeposit, TransactionType.DEBIT, payout, transferRef);
+        transactionService.recordTransaction(savedTarget, TransactionType.CREDIT, payout, transferRef);
+
+        log.info("Closed deposit account id={} ('{}'): payout {} {} (principal {} + net interest {}) "
+                        + "transferred to account id={} ('{}'); deposit status=CLOSED; transferRef={}",
+                id, savedDeposit.getName(), payout, savedDeposit.getCurrency(),
+                principal, netInterest, targetAccountId, savedTarget.getName(), transferRef);
+
+        return new DepositCloseResultDto(
+                savedDeposit.getId(),
+                savedDeposit.getName(),
+                principal.setScale(2, RoundingMode.HALF_EVEN),
+                netInterest.setScale(2, RoundingMode.HALF_EVEN),
+                payout,
+                savedDeposit.getCurrency(),
+                savedTarget.getId(),
+                savedTarget.getName()
+        );
     }
 
     @Override

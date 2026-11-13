@@ -6,6 +6,8 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -13,10 +15,14 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Data Transfer Object representing a Deposit Account.
  * Implemented as an immutable Java record.
+ * <p>
+ * The user chooses a start date and a term in months; the maturity date is
+ * derived from them and never entered by hand.
  */
 public record DepositAccountDto(
         Long id,
@@ -49,8 +55,14 @@ public record DepositAccountDto(
         @PastOrPresent(message = "Start date cannot be in the future")
         LocalDate startDate,
 
-        @NotNull(message = "Maturity date is required")
-        LocalDate maturityDate,
+        /**
+         * Deposit term in months chosen by the user; the maturity date is
+         * calculated as {@code startDate + termMonths} months.
+         */
+        @NotNull(message = "Term in months is required")
+        @Min(value = 1, message = "Term must be at least 1 month")
+        @Max(value = 600, message = "Term cannot exceed 600 months (50 years)")
+        Integer termMonths,
 
         BigDecimal accruedInterest
 ) {
@@ -68,20 +80,33 @@ public record DepositAccountDto(
                 BigDecimal.ZERO,
                 new BigDecimal("5.0000"), // Default TAX to 5.00%
                 LocalDate.now(),
-                LocalDate.now().plusYears(1),
+                12, // Default term: 12 months
                 BigDecimal.ZERO
         );
     }
 
     /**
-     * Cross-field validation: the maturity date must fall strictly after the start date.
+     * Maturity date derived from the start date and the selected term in months.
+     * {@link LocalDate#plusMonths} clamps the day-of-month for shorter months
+     * (e.g. Jan 31 + 1 month = Feb 28/29).
+     */
+    public LocalDate computedMaturityDate() {
+        return (startDate == null || termMonths == null)
+                ? null
+                : startDate.plusMonths(termMonths);
+    }
+
+    /**
+     * Cross-field validation: the derived maturity date must fall strictly after the start date,
+     * i.e. the term must be at least one full month.
      * Declared as a Bean Validation constraint (instead of throwing from the compact
      * constructor) so that Spring MVC can report it as a form error and re-render
      * the form with the user's input preserved.
      */
-    @AssertTrue(message = "Maturity date must be strictly after the start date.")
+    @AssertTrue(message = "The term must be at least 1 month so that the maturity date falls after the start date.")
     public boolean isDateRangeValid() {
-        return startDate == null || maturityDate == null || maturityDate.isAfter(startDate);
+        LocalDate maturity = computedMaturityDate();
+        return startDate == null || termMonths == null || maturity.isAfter(startDate);
     }
 
     /**
@@ -99,7 +124,7 @@ public record DepositAccountDto(
                 account.getInterestRate(),
                 account.getTaxRate(),
                 account.getStartDate(),
-                account.getMaturityDate(),
+                (int) ChronoUnit.MONTHS.between(account.getStartDate(), account.getMaturityDate()),
                 account.getAccruedInterest()
         );
     }
@@ -112,7 +137,7 @@ public record DepositAccountDto(
                 this.interestRate(),
                 this.taxRate(),
                 this.startDate(),
-                this.maturityDate()
+                computedMaturityDate()
         );
         if (this.accruedInterest() != null) {
             account.setAccruedInterest(this.accruedInterest());
