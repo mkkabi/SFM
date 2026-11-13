@@ -52,6 +52,8 @@
                                 <li><a th:href="@{/accounts}" class="dropdown-item" >All Accounts</a></li>
                                 <li><a th:href="@{/cash-accounts/new}" class="dropdown-item" >Add Cash Account</a></li>
                                 <li><a th:href="@{/deposit-accounts/new}" class="dropdown-item" >Add Deposit Account</a></li>
+                                <li><a th:href="@{/transfers/new}" class="dropdown-item" >Transfer Funds</a></li>
+                                <li><a th:href="@{/transfers/history}" class="dropdown-item" >Transfer History</a></li>
                             </ul>
 
                         </li>
@@ -69,8 +71,6 @@
                                 <li><a th:href="@{/inflation/worldbank/annual}" class="dropdown-item" >World Bank Annual</a></li>
                                 <li><a th:href="@{/inflation/statbureau/monthly}" class="dropdown-item" >StatBureau Monthly</a></li>
                                 <li><a th:href="@{/inflation/statbureau/annual}" class="dropdown-item" >StatBureau Annual</a></li>
-<!--                                <li><a th:href="@{/cash-accounts/new}" class="dropdown-item" >Add Cash Account</a></li>-->
-<!--                                <li><a th:href="@{/deposit-accounts/new}" class="dropdown-item" >Add Deposit Account</a></li>-->
                             </ul>
 
                         </li>
@@ -81,10 +81,6 @@
 
         <br>
         <br>
-<!--        <div class="alert alert-success text-center" th:if="${message != null}">[[${message}]]-->
-<!--        </div>-->
-<!--        <div class="alert alert-danger text-center" th:if="${warning!=null &&#strings.length(warning)>0}">[[${warning}]]-->
-<!--        </div>-->
 
     </div>
 

@@ -54,7 +54,17 @@ public record TransactionDto(
     }
 
     public String signedAmount() {
-        return (type == TransactionType.DEPOSIT ? "+" : "-")
-                + amount.toPlainString() + " " + currency;
+        boolean inflow = type == TransactionType.DEPOSIT || type == TransactionType.CREDIT;
+        return (inflow ? "+" : "-") + amount.toPlainString() + " " + currency;
+    }
+
+    /** Human-readable label used by the transaction history table. */
+    public String typeLabel() {
+        return switch (type) {
+            case DEPOSIT -> "DEPOSIT";
+            case WITHDRAWAL -> "WITHDRAWAL";
+            case DEBIT -> "TRANSFER OUT (DEBIT)";
+            case CREDIT -> "TRANSFER IN (CREDIT)";
+        };
     }
 }

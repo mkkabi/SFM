@@ -27,6 +27,21 @@ public interface TransactionService {
     void recordTransaction(Account account, TransactionType type, BigDecimal amount, LocalDateTime timestamp);
 
     /**
+     * Records one leg of a transfer, tagged with the reference shared by both
+     * legs of the same movement. The reference lets the transfer history page
+     * pair the outgoing DEBIT with the incoming CREDIT.
+     *
+     * @param transferRef shared identifier of the transfer, not null/blank
+     */
+    void recordTransaction(Account account, TransactionType type, BigDecimal amount, String transferRef);
+
+    /**
+     * Records a transaction with a custom timestamp and transfer reference.
+     */
+    void recordTransaction(Account account, TransactionType type, BigDecimal amount,
+                           LocalDateTime timestamp, String transferRef);
+
+    /**
      * Full transaction history of one account, newest first.
      *
      * @param accountId id of the account

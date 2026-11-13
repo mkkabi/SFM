@@ -22,6 +22,12 @@ import java.time.LocalDateTime;
  * Every successful deposit/withdrawal applied by
  * {@code CashAccountService} or {@code DepositAccountService} is recorded
  * here, so the app can show the full history of any account.
+ * <p>
+ * Transfers between accounts record a pair of rows: a DEBIT on the source
+ * and a CREDIT on the target. Both rows of one transfer share the same
+ * {@link #transferRef}, which lets the transfer history page pair the legs
+ * and show one entry per movement. Regular deposits/withdrawals leave the
+ * reference null.
  */
 
 @Setter
@@ -69,6 +75,13 @@ public class Transaction {
 
     @Column(nullable = false, precision = 10, scale = 4)
     private BigDecimal rateEurToUah;
+
+    /**
+     * Shared identifier of the two legs (DEBIT + CREDIT) of one transfer,
+     * null for non-transfer movements such as deposits and withdrawals.
+     */
+    @Column(length = 40)
+    private String transferRef;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime timestamp = LocalDateTime.now();
