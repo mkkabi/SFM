@@ -41,7 +41,10 @@ public class CurrencyAnalyticsServiceImpl implements CurrencyAnalyticsService {
         BigDecimal counterfactualUah = BigDecimal.ZERO;
 
         for (Transaction tx : transactions) {
-            BigDecimal sign = (tx.getType() == TransactionType.DEPOSIT) ? BigDecimal.ONE : BigDecimal.valueOf(-1);
+            // Inflows: direct deposits and incoming transfer legs (CREDIT).
+            // Outflows: withdrawals and outgoing transfer legs (DEBIT).
+            BigDecimal sign = (tx.getType() == TransactionType.DEPOSIT || tx.getType() == TransactionType.CREDIT)
+                    ? BigDecimal.ONE : BigDecimal.valueOf(-1);
 
             counterfactualUsd = counterfactualUsd.add(sign.multiply(tx.getAmountUsd()));
             counterfactualEur = counterfactualEur.add(sign.multiply(tx.getAmountEur()));
