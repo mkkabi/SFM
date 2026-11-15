@@ -7,6 +7,7 @@ import com.dnu.sfm.exception.AccountNotFoundException;
 import com.dnu.sfm.exception.CurrencyMismatchException;
 import com.dnu.sfm.exception.InactiveAccountException;
 import com.dnu.sfm.exception.MaturityNotReachedException;
+import com.dnu.sfm.exception.MaturityReachedException;
 import com.dnu.sfm.model.Account;
 import com.dnu.sfm.model.AccountOperation;
 import com.dnu.sfm.model.AccountStatus;
@@ -121,7 +122,7 @@ public class DepositAccountController {
             return "redirect:/accounts";
 
         } catch (AccountNotFoundException | InactiveAccountException | MaturityNotReachedException
-                | IllegalArgumentException ex) {
+                | MaturityReachedException | IllegalArgumentException ex) {
             // Back to the update form with the error shown next to the account data
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
             return "redirect:/deposit-accounts/{id}/update";
