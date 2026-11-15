@@ -5,9 +5,11 @@ import com.dnu.sfm.dto.TransferResultDto;
 import com.dnu.sfm.exception.AccountNotFoundException;
 import com.dnu.sfm.exception.CurrencyMismatchException;
 import com.dnu.sfm.exception.InactiveAccountException;
+import com.dnu.sfm.exception.MaturityReachedException;
 import com.dnu.sfm.model.Account;
 import com.dnu.sfm.model.AccountStatus;
 import com.dnu.sfm.model.CashAccount;
+import com.dnu.sfm.model.DepositAccount;
 import com.dnu.sfm.service.AccountService;
 import com.dnu.sfm.service.TransferService;
 import jakarta.validation.Valid;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -97,7 +101,7 @@ public class TransferController {
             return "redirect:/accounts";
 
         } catch (AccountNotFoundException | InactiveAccountException | CurrencyMismatchException
-                | IllegalArgumentException ex) {
+                | MaturityReachedException | IllegalArgumentException ex) {
             model.addAttribute("errorMessage", ex.getMessage());
             model.addAttribute("fromAccounts", activeCashAccounts());
             model.addAttribute("toAccounts", activeAccounts());
@@ -112,8 +116,13 @@ public class TransferController {
     }
 
     private List<Account> activeAccounts() {
+        LocalDate today = LocalDate.now();
         return accountService.getAllAccounts().stream()
                 .filter(a -> a.getStatus() == AccountStatus.ACTIVE)
+                // Matured deposit accounts no longer accept incoming funds:
+                // don't offer them as transfer targets
+                .filter(a -> !(a instanceof DepositAccount deposit
+                        && !today.isBefore(deposit.getMaturityDate())))
                 .toList();
     }
 }

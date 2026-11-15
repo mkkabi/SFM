@@ -5,6 +5,7 @@ import com.dnu.sfm.dto.TransferResultDto;
 import com.dnu.sfm.exception.AccountNotFoundException;
 import com.dnu.sfm.exception.CurrencyMismatchException;
 import com.dnu.sfm.exception.InactiveAccountException;
+import com.dnu.sfm.exception.MaturityReachedException;
 import com.dnu.sfm.model.Account;
 import com.dnu.sfm.model.AccountStatus;
 import com.dnu.sfm.model.CashAccount;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -83,6 +85,17 @@ public class TransferServiceImpl implements TransferService {
             throw new InactiveAccountException(
                     "Target account '" + to.getName() + "' is " + to.getStatus()
                             + " - transfers are allowed only to ACTIVE accounts");
+        }
+
+        // A transfer into a deposit account is a way of depositing funds, so
+        // the same maturity rule applies as for direct top-ups: once the
+        // deposit has reached its maturity date it accepts no new money.
+        if (to instanceof DepositAccount targetDeposit
+                && !LocalDate.now().isBefore(targetDeposit.getMaturityDate())) {
+            throw new MaturityReachedException(
+                    "Deposit account '" + to.getName() + "' reached its maturity date ("
+                            + targetDeposit.getMaturityDate() + ") and no longer accepts funds. "
+                            + "Close the deposit and withdraw the payout instead.");
         }
 
         if (from.getCurrency() != to.getCurrency()) {
