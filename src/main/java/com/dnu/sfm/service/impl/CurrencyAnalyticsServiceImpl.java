@@ -3,6 +3,8 @@ package com.dnu.sfm.service.impl;
 import com.dnu.sfm.dto.AccountCurrencyComparisonDto;
 import com.dnu.sfm.dto.CurrencyOutcomeDto;
 import com.dnu.sfm.model.Account;
+import com.dnu.sfm.model.AccountStatus;
+import com.dnu.sfm.model.DepositAccount;
 import com.dnu.sfm.model.Transaction;
 import com.dnu.sfm.model.TransactionType;
 import com.dnu.sfm.repository.AccountRepository;
@@ -35,53 +37,75 @@ public class CurrencyAnalyticsServiceImpl implements CurrencyAnalyticsService {
 
         List<Transaction> transactions = transactionRepository.findByAccountIdOrderByTimestampDescIdDesc(accountId);
 
-        // 1. Replay ledger to obtain counterfactual final balances
+        boolean closedDeposit = account.getStatus() == AccountStatus.CLOSED
+                && account instanceof DepositAccount;
+
+        // 1. Replay ledger to obtain pure principal in each currency jar
         BigDecimal counterfactualUsd = BigDecimal.ZERO;
         BigDecimal counterfactualEur = BigDecimal.ZERO;
         BigDecimal counterfactualUah = BigDecimal.ZERO;
 
         for (Transaction tx : transactions) {
-            // Inflows: direct deposits and incoming transfer legs (CREDIT).
-            // Outflows: withdrawals and outgoing transfer legs (DEBIT).
+            // Exclude the close-deposit payout transfer leg so it is not treated as a user withdrawal.
+            if (closedDeposit && tx.getType() == TransactionType.DEBIT && tx.getTransferRef() != null) {
+                continue;
+            }
+
+            // Inflows: initial balance/deposits and incoming transfers.
+            // Outflows: withdrawals and outgoing transfers.
             BigDecimal sign = (tx.getType() == TransactionType.DEPOSIT || tx.getType() == TransactionType.CREDIT)
-                    ? BigDecimal.ONE : BigDecimal.valueOf(-1);
+                    ? BigDecimal.ONE
+                    : BigDecimal.valueOf(-1);
 
             counterfactualUsd = counterfactualUsd.add(sign.multiply(tx.getAmountUsd()));
             counterfactualEur = counterfactualEur.add(sign.multiply(tx.getAmountEur()));
             counterfactualUah = counterfactualUah.add(sign.multiply(tx.getAmountUah()));
         }
 
-        // 2. Fetch current rates for today's valuation in UAH
+        // 2. Determine actual principal (excluding interest)
+        // For active accounts, account.getBalance() contains principal only.
+        // For closed deposit accounts, balance was zeroed, so the replayed jar
+        // for the account's own currency represents the true net principal invested.
+        BigDecimal actualPrincipal = closedDeposit
+                ? switch (account.getCurrency()) {
+            case USD -> counterfactualUsd;
+            case EUR -> counterfactualEur;
+            case UAH -> counterfactualUah;
+        }
+                : account.getBalance();
+
+        // 3. Fetch current exchange rates for valuation today
         Map<String, BigDecimal> todayRates = rateProviderService.getEffectiveRatesForDate(LocalDate.now());
         BigDecimal todayRateUsd = todayRates.get("USD");
         BigDecimal todayRateEur = todayRates.get("EUR");
 
-        // Value of each currency position today in UAH
+        // Value of each pure currency position today in UAH
         BigDecimal valUsdInUah = counterfactualUsd.multiply(todayRateUsd).setScale(2, RoundingMode.HALF_EVEN);
         BigDecimal valEurInUah = counterfactualEur.multiply(todayRateEur).setScale(2, RoundingMode.HALF_EVEN);
         BigDecimal valUahInUah = counterfactualUah.setScale(2, RoundingMode.HALF_EVEN);
 
-        // Actual account valuation today in UAH
+        // Baseline actual principal valued today in UAH
         BigDecimal actualValInUah = switch (account.getCurrency()) {
-            case USD -> account.getBalance().multiply(todayRateUsd).setScale(2, RoundingMode.HALF_EVEN);
-            case EUR -> account.getBalance().multiply(todayRateEur).setScale(2, RoundingMode.HALF_EVEN);
-            case UAH -> account.getBalance().setScale(2, RoundingMode.HALF_EVEN);
+            case USD -> actualPrincipal.multiply(todayRateUsd).setScale(2, RoundingMode.HALF_EVEN);
+            case EUR -> actualPrincipal.multiply(todayRateEur).setScale(2, RoundingMode.HALF_EVEN);
+            case UAH -> actualPrincipal.setScale(2, RoundingMode.HALF_EVEN);
         };
 
-        // 3. Build alternative comparison list
+        // 4. Build pure FX comparison list (no pinning needed)
         List<CurrencyOutcomeDto> alternatives = new ArrayList<>();
         alternatives.add(createOutcome("USD", counterfactualUsd, valUsdInUah, actualValInUah));
         alternatives.add(createOutcome("EUR", counterfactualEur, valEurInUah, actualValInUah));
         alternatives.add(createOutcome("UAH", counterfactualUah, valUahInUah, actualValInUah));
 
-        // 4. Generate user verdict
+        // 5. Generate verdict based strictly on foreign exchange appreciation
         String verdict = buildVerdict(account.getCurrency().name(), alternatives);
 
         return new AccountCurrencyComparisonDto(
                 account.getId(),
                 account.getName(),
                 account.getCurrency().name(),
-                account.getBalance(),
+                closedDeposit,
+                actualPrincipal.setScale(2, RoundingMode.HALF_EVEN),
                 actualValInUah,
                 alternatives,
                 verdict
@@ -92,9 +116,17 @@ public class CurrencyAnalyticsServiceImpl implements CurrencyAnalyticsService {
         BigDecimal diffUah = valueInUahToday.subtract(actualUah);
         BigDecimal pctDiff = BigDecimal.ZERO;
         if (actualUah.signum() > 0) {
-            pctDiff = diffUah.divide(actualUah, 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_EVEN);
+            pctDiff = diffUah.divide(actualUah, 4, RoundingMode.HALF_EVEN)
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(2, RoundingMode.HALF_EVEN);
         }
-        return new CurrencyOutcomeDto(currency, nominal.setScale(2, RoundingMode.HALF_EVEN), valueInUahToday, diffUah, pctDiff);
+        return new CurrencyOutcomeDto(
+                currency,
+                nominal.setScale(2, RoundingMode.HALF_EVEN),
+                valueInUahToday,
+                diffUah,
+                pctDiff
+        );
     }
 
     private String buildVerdict(String currentCurrency, List<CurrencyOutcomeDto> outcomes) {
@@ -107,7 +139,8 @@ public class CurrencyAnalyticsServiceImpl implements CurrencyAnalyticsService {
         } else if (best != null) {
             return "Holding " + best.currencyCode() + " would have yielded "
                     + best.differenceVersusActualUah().abs() + " UAH more ("
-                    + best.percentageDifferenceVersusActual().abs() + "%) than your current " + currentCurrency + " strategy.";
+                    + best.percentageDifferenceVersusActual().abs() + "%) than holding "
+                    + currentCurrency + " due to exchange rate changes.";
         }
         return "Not enough transaction data to determine an outcome.";
     }
