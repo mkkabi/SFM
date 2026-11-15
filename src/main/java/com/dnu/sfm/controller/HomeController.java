@@ -53,5 +53,10 @@ public class HomeController {
         return "home";
     }
 
+    @GetMapping({"/interest-calculator", "interest-calc"})
+    public String interestCalculator(Model model) {
+        return "gross-interest";
+    }
+
 
 }
