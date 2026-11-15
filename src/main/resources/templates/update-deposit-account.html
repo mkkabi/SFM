@@ -59,9 +59,9 @@
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
-        <!-- Add funds to the deposit -->
+        <!-- Add funds to the deposit (only before maturity: a matured deposit accepts no new money) -->
         <form th:action="@{/deposit-accounts/{id}/update(id=${account.id})}" method="post"
-              th:if="${account.status.name() == 'ACTIVE'}">
+              th:if="${account.status.name() == 'ACTIVE' and !maturityReached}">
           <input type="hidden" name="operation" value="DEPOSIT">
 
           <div class="row g-3">
@@ -84,6 +84,14 @@
             </div>
           </div>
         </form>
+
+        <!-- Matured: adding funds is no longer possible -->
+        <div th:if="${maturityReached and account.status.name() == 'ACTIVE'}"
+             class="alert alert-warning border mt-4 mb-0" role="alert">
+          <i class="bi bi-ban me-2"></i>
+          The deposit has reached its maturity date &ndash; adding funds is no longer possible.
+          Close the deposit below to withdraw the payout (principal + net interest).
+        </div>
 
         <!-- Close deposit & withdraw (only when the maturity date has been reached) -->
         <div th:if="${maturityReached and account.status.name() == 'ACTIVE'}" class="mt-4">
