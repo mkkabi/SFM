@@ -56,13 +56,16 @@
     <div class="col-md-5">
       <div class="card h-100 border-0 shadow-sm">
         <div class="card-body">
-          <span class="text-uppercase text-muted fw-semibold small">Current Strategy</span>
+          <span class="text-uppercase text-muted fw-semibold small"
+                th:text="${comparison.accountClosed} ? 'Final Result' : 'Current Strategy'">Current Strategy</span>
           <h3 class="fw-bold my-2">
             <span th:text="${#numbers.formatDecimal(comparison.actualBalance, 1, 'COMMA', 2, 'POINT')}">1,000.00</span>
             <span class="badge bg-primary" th:text="${comparison.accountCurrency}">USD</span>
+            <span th:if="${comparison.accountClosed}" class="badge bg-secondary">CLOSED</span>
           </h3>
           <p class="text-secondary small mb-0">
-            Current purchasing power today:
+            <span th:if="${!comparison.accountClosed}">Current purchasing power today:</span>
+            <span th:if="${comparison.accountClosed}">Payout received at close, valued at today's rates:</span>
             <span class="fw-bold text-dark"
                   th:text="${#numbers.formatDecimal(comparison.actualValueInUahToday, 1, 'COMMA', 2, 'POINT') + ' ₴'}">
                                 41,500.00 ₴
@@ -121,7 +124,8 @@
             <div class="d-flex align-items-center">
               <span class="fw-bold fs-6 me-2" th:text="${alt.currencyCode}">USD</span>
               <span th:if="${alt.currencyCode == comparison.accountCurrency}"
-                    class="badge bg-secondary small">Current</span>
+                    class="badge bg-secondary small"
+                    th:text="${comparison.accountClosed} ? 'Actual' : 'Current'">Current</span>
             </div>
           </td>
 

@@ -36,11 +36,22 @@ public class TransactionServiceImp implements TransactionService {
 
     @Override
     public void recordTransaction(Account account, TransactionType type, BigDecimal amount) {
-        recordTransaction(account, type, amount, LocalDateTime.now());
+        recordTransaction(account, type, amount, LocalDateTime.now(), null);
     }
 
     @Override
     public void recordTransaction(Account account, TransactionType type, BigDecimal amount, LocalDateTime timestamp) {
+        recordTransaction(account, type, amount, timestamp, null);
+    }
+
+    @Override
+    public void recordTransaction(Account account, TransactionType type, BigDecimal amount, String transferRef) {
+        recordTransaction(account, type, amount, LocalDateTime.now(), transferRef);
+    }
+
+    @Override
+    public void recordTransaction(Account account, TransactionType type, BigDecimal amount,
+                                  LocalDateTime timestamp, String transferRef) {
         Objects.requireNonNull(account, "Account must not be null");
         Objects.requireNonNull(type, "Transaction type must not be null");
         Objects.requireNonNull(amount, "Amount must not be null");
@@ -86,11 +97,16 @@ public class TransactionServiceImp implements TransactionService {
                 effectiveTimestamp
         );
 
+        if (transferRef != null && !transferRef.isBlank()) {
+            transaction.setTransferRef(transferRef);
+        }
+
         transactionRepository.save(transaction);
 
-        log.info("Recorded multi-currency tx at {}: accountId={}, type={}, native={} {}, UAH={}, USD={}, EUR={}",
+        log.info("Recorded multi-currency tx at {}: accountId={}, type={}, native={} {}, UAH={}, USD={}, EUR={}{}",
                 effectiveTimestamp, account.getId(), type, amount, account.getCurrency(),
-                transaction.getAmountUah(), transaction.getAmountUsd(), transaction.getAmountEur());
+                transaction.getAmountUah(), transaction.getAmountUsd(), transaction.getAmountEur(),
+                transferRef != null && !transferRef.isBlank() ? ", transferRef=" + transferRef : "");
     }
 
     @Override

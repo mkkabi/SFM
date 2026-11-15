@@ -2,6 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{elements.html :: head('Transactions - SFM')}">
+    <title>Transactions - SFM</title>
 </head>
 
 <body>
@@ -78,8 +79,8 @@
                         <tr th:each="tx : ${transactions}">
                             <td th:text="${tx.formattedTimestamp()}">2026-10-31 14:05</td>
                             <td>
-                <span th:class="${tx.type.name() == 'DEPOSIT' ? 'badge bg-success' : 'badge bg-danger'}"
-                      th:text="${tx.type}">DEPOSIT</span>
+                <span th:class="${tx.type.name() == 'DEPOSIT' or tx.type.name() == 'CREDIT' ? 'badge bg-success' : 'badge bg-danger'}"
+                      th:text="${tx.typeLabel()}">DEPOSIT</span>
                             </td>
                             <td th:text="${tx.signedAmount()}">+100.00 USD</td>
                             <td th:text="${tx.balanceAfter} + ' ' + ${tx.currency}">1,100.00 USD</td>
@@ -95,33 +96,6 @@
                         </tbody>
                     </table>
 
-
-<!--                    <table class="table table-hover align-middle">-->
-<!--                        <thead class="table-light">-->
-<!--                        <tr>-->
-<!--                            <th scope="col">Date &amp; Time</th>-->
-<!--                            <th scope="col">Type</th>-->
-<!--                            <th scope="col" class="text-end">Amount</th>-->
-<!--                            <th scope="col" class="text-end">Balance After</th>-->
-<!--                        </tr>-->
-<!--                        </thead>-->
-<!--                        <tbody>-->
-<!--                        <tr th:each="tx : ${transactions}">-->
-<!--                            <td th:text="${tx.formattedTimestamp()}">2026-10-31 14:05</td>-->
-<!--                            <td>-->
-<!--                                <span th:if="${tx.type.name() == 'DEPOSIT'}" class="badge text-bg-success">Deposit</span>-->
-<!--                                <span th:if="${tx.type.name() == 'WITHDRAWAL'}" class="badge text-bg-danger">Withdrawal</span>-->
-<!--                            </td>-->
-<!--                            <td class="text-end font-monospace"-->
-<!--                                th:classappend="${tx.type.name() == 'DEPOSIT'} ? 'text-success' : 'text-danger'"-->
-<!--                                th:text="${tx.signedAmount()}">+0.00 USD</td>-->
-<!--                            <td class="text-end font-monospace"-->
-<!--                                th:text="|${tx.balanceAfter} ${tx.currency}|">0.00 USD</td>-->
-<!--                        </tr>-->
-<!--                        </tbody>-->
-<!--                    </table>-->
-
-
                 </div>
             </div>
 
@@ -130,7 +104,5 @@
 </div>
 
 <footer th:replace="~{elements.html :: footer}"></footer>
-
-
 </body>
 </html>

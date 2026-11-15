@@ -57,6 +57,19 @@
                         </li>
 
 
+                        <li class="nav-item dropdown">
+                            <a th:href="@{#}" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Transfers
+                            </a>
+
+                            <ul class="dropdown-menu" >
+                                <li><a th:href="@{/transfers/new}" class="dropdown-item" >Transfer Funds</a></li>
+                                <li><a th:href="@{/transfers/history}" class="dropdown-item" >Transfer History</a></li>
+                            </ul>
+
+                        </li>
+
+
 
                         <li class="nav-item dropdown">
                             <a th:href="@{#}" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -69,11 +82,17 @@
                                 <li><a th:href="@{/inflation/worldbank/annual}" class="dropdown-item" >World Bank Annual</a></li>
                                 <li><a th:href="@{/inflation/statbureau/monthly}" class="dropdown-item" >StatBureau Monthly</a></li>
                                 <li><a th:href="@{/inflation/statbureau/annual}" class="dropdown-item" >StatBureau Annual</a></li>
-<!--                                <li><a th:href="@{/cash-accounts/new}" class="dropdown-item" >Add Cash Account</a></li>-->
-<!--                                <li><a th:href="@{/deposit-accounts/new}" class="dropdown-item" >Add Deposit Account</a></li>-->
                             </ul>
 
                         </li>
+
+
+                        <li class="nav-item">
+                            <a th:href="@{/interest-calculator}" class="nav-link active" aria-current="page">Interest calculator</a>
+                        </li>
+
+
+
                     </ul>
                 </div>
             </div>
@@ -81,10 +100,6 @@
 
         <br>
         <br>
-<!--        <div class="alert alert-success text-center" th:if="${message != null}">[[${message}]]-->
-<!--        </div>-->
-<!--        <div class="alert alert-danger text-center" th:if="${warning!=null &&#strings.length(warning)>0}">[[${warning}]]-->
-<!--        </div>-->
 
     </div>
 

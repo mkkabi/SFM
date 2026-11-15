@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{elements.html :: head('Transfer Funds - SFM')}">
+  <title>Transfer Funds - SFM</title>
+</head>
+
+<body>
+<div th:replace="~{elements.html :: navbar}"></div>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+
+      <!-- Navigation / Back link -->
+      <div class="mb-3 d-flex justify-content-between align-items-center">
+        <a th:href="@{/accounts}" class="text-decoration-none text-muted">
+          <i class="bi bi-arrow-left"></i> Back to Accounts
+        </a>
+        <a th:href="@{/transfers/history}" class="text-decoration-none text-muted">
+          <i class="bi bi-clock-history me-1"></i> Transfer History
+        </a>
+      </div>
+
+      <div class="card card-custom p-4 p-md-5">
+        <div class="d-flex align-items-center mb-4">
+          <div class="bg-primary text-white rounded-3 p-3 me-3">
+            <i class="bi bi-arrow-left-right fs-3"></i>
+          </div>
+          <div>
+            <h3 class="mb-1 fw-bold">Transfer Funds</h3>
+            <p class="text-muted mb-0">Move money between cash accounts or from a cash account to a deposit account.</p>
+          </div>
+        </div>
+
+        <!-- Flash error passed back after a failed transfer attempt -->
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMessage}">Error</span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Form bound to the TransferFormDto form-backing object -->
+        <form th:action="@{/transfers/new}" th:object="${transfer}" method="post" novalidate>
+
+          <!-- Global validation error alert (inside form context) -->
+          <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">Validation error</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+
+          <div class="row g-3">
+            <!-- Source account: only cash accounts can send money -->
+            <div class="col-12">
+              <label for="fromAccountId" class="form-label">From Account (source) <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-wallet2"></i></span>
+                <select id="fromAccountId"
+                        th:field="*{fromAccountId}"
+                        class="form-select"
+                        th:errorclass="is-invalid">
+                  <option value="">-- select a cash account --</option>
+                  <option th:each="a : ${fromAccounts}"
+                          th:value="${a.id}"
+                          th:text="|${a.name} (${a.currency}) - balance ${a.balance} ${a.currency}|">
+                    Wallet (USD) - balance 100.00 USD
+                  </option>
+                </select>
+              </div>
+              <div class="form-text">Only cash accounts can send funds; deposits are locked until maturity.</div>
+              <div class="invalid-feedback" th:if="${#fields.hasErrors('fromAccountId')}" th:errors="*{fromAccountId}">
+                Please choose the source account.
+              </div>
+            </div>
+
+            <!-- Target account: cash or deposit -->
+            <div class="col-12">
+              <label for="toAccountId" class="form-label">To Account (target) <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-piggy-bank"></i></span>
+                <select id="toAccountId"
+                        th:field="*{toAccountId}"
+                        class="form-select"
+                        th:errorclass="is-invalid">
+                  <option value="">-- select a target account --</option>
+                  <option th:each="a : ${toAccounts}"
+                          th:value="${a.id}"
+                          th:text="|${a.name} (${a.currency}) - balance ${a.balance} ${a.currency} ${a instanceof T(com.dnu.sfm.model.DepositAccount) ? '[Deposit]' : '[Cash]'}|">
+                    Savings (USD) - balance 0.00 USD [Deposit]
+                  </option>
+                </select>
+              </div>
+              <div class="form-text">Both accounts must use the same currency.</div>
+              <div class="invalid-feedback" th:if="${#fields.hasErrors('toAccountId')}" th:errors="*{toAccountId}">
+                Please choose the target account.
+              </div>
+              <div class="text-danger small" th:if="${#fields.hasErrors('accountsValid')}" th:errors="*{accountsValid}">
+                Source and target account must be different.
+              </div>
+            </div>
+
+            <!-- Amount -->
+            <div class="col-md-6">
+              <label for="amount" class="form-label">Amount <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-cash-stack"></i></span>
+                <input type="number"
+                       step="0.01"
+                       min="0.01"
+                       id="amount"
+                       th:field="*{amount}"
+                       class="form-control"
+                       th:errorclass="is-invalid"
+                       placeholder="0.00">
+              </div>
+              <div class="invalid-feedback" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}">
+                Please specify a valid transfer amount.
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert-light border mt-4 mb-0" role="alert">
+            <i class="bi bi-info-circle me-2"></i>
+            Each transfer registers a transaction in <strong>both</strong> accounts:
+            a debit (money out) on the source and a credit (money in) on the target.
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Actions -->
+          <div class="d-flex justify-content-end gap-2">
+            <a th:href="@{/accounts}" class="btn btn-outline-secondary px-4">Cancel</a>
+            <button type="submit" class="btn btn-primary px-4 fw-semibold">
+              <i class="bi bi-arrow-left-right me-1"></i> Transfer Funds
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer th:replace="~{elements.html :: footer}"></footer>
+</body>
+</html>

@@ -15,4 +15,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      */
     List<Transaction> findByAccountIdOrderByTimestampDescIdDesc(Long accountId);
 
+    /**
+     * All legs of all transfers (DEBIT and CREDIT rows carrying a transfer
+     * reference), newest first. The transfer history page groups these rows
+     * by {@code transferRef} to build one entry per movement.
+     */
+    List<Transaction> findByTransferRefIsNotNullOrderByTimestampDescIdDesc();
+
 }

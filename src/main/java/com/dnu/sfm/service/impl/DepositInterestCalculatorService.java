@@ -58,7 +58,10 @@ public class DepositInterestCalculatorService {
         boolean isFirstDeposit = true;
 
         for (Transaction tx : transactions) {
-            if (tx.getType() == TransactionType.DEPOSIT) {
+            // Principal tranches: direct deposits (DEPOSIT) and incoming
+            // transfer legs (CREDIT) - both add money that starts earning
+            // interest from the day it lands on the deposit account.
+            if (tx.getType() == TransactionType.DEPOSIT || tx.getType() == TransactionType.CREDIT) {
                 LocalDate depositDate = tx.getTimestamp().toLocalDate();
                 long daysInvested = ChronoUnit.DAYS.between(depositDate, maturityDate);
 
