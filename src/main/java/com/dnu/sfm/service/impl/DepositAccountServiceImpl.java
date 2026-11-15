@@ -14,6 +14,7 @@ import com.dnu.sfm.exception.AccountNotFoundException;
 import com.dnu.sfm.exception.CurrencyMismatchException;
 import com.dnu.sfm.exception.InactiveAccountException;
 import com.dnu.sfm.exception.MaturityNotReachedException;
+import com.dnu.sfm.exception.MaturityReachedException;
 import com.dnu.sfm.repository.AccountRepository;
 import com.dnu.sfm.repository.DepositAccountRepository;
 import com.dnu.sfm.service.DepositAccountService;
@@ -95,6 +96,19 @@ public class DepositAccountServiceImpl implements DepositAccountService {
         requirePositiveAmount(amount, "Deposit amount must be positive");
 
         DepositAccount account = getActiveDepositAccount(id);
+
+        // Adding funds after maturity would silently start a new term at the
+        // old conditions. Once the maturity date is reached (today on or after
+        // it) the deposit accepts no new money - it must be closed and the
+        // payout withdrawn instead. A strict equality check is enough: the
+        // condition also covers every date after maturity.
+        LocalDate today = LocalDate.now();
+        if (!today.isBefore(account.getMaturityDate())) {
+            throw new MaturityReachedException(
+                    "Deposit account '" + account.getName() + "' reached its maturity date ("
+                            + account.getMaturityDate() + ") - deposits are no longer allowed. "
+                            + "Close the deposit and withdraw the payout instead.");
+        }
 
         account.setBalance(account.getBalance().add(amount));
         DepositAccount savedAccount = depositAccountRepository.save(account);
