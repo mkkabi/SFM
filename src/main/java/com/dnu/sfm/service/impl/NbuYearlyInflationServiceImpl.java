@@ -42,8 +42,11 @@ public class NbuYearlyInflationServiceImpl implements NbuYearlyInflationService 
     @Override
     public List<NbuYearlyInflation> fetchFromNbu(int year) {
         log.info("Requesting NBU yearly inflation records for {}", year);
+        // The annual figure of `year` is published in January of year + 1
+        // (NBU annual endpoint only accepts January dates); rows come back
+        // dated year + 1 and are re-keyed to `year` by NbuYearlyInflation#fromDto.
         List<NbuYearlyInflationRecordDto> dtos =
-                nbuInflationClient.getUkraineAnnualInflation(LocalDate.of(year, 1, 1));
+                nbuInflationClient.getUkraineAnnualInflation(LocalDate.of(year + 1, 1, 1));
 
         List<NbuYearlyInflation> entities = dtos.stream()
                 // national CPI only - see the class comment for what is skipped
