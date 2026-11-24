@@ -35,26 +35,36 @@ public class WorldBankInflationServiceImpl implements WorldBankInflationService 
 
     @Override
     public List<WorldBankInflation> fetchFromWorldBank(int year) {
-        log.info("Requesting World Bank annual inflation records for {}", year);
+        log.info("Requesting World Bank annual inflation records for {} across all tracked currencies", year);
 
         List<WorldBankInflation> entities = new ArrayList<>();
         for (Currency currency : Currency.values()) {
-            List<WorldBankInflationRecordDto> dtos =
-                    worldBankInflationClient.fetchAnnualInflationRecords(currency, year);
-
-            for (WorldBankInflationRecordDto dto : dtos) {
-                // The World Bank returns an explicit null for years without data
-                // (e.g. future years); skip them instead of persisting a zero rate.
-                if (!dto.hasValue()) {
-                    log.warn("World Bank returned no value for {} in {} - skipping", currency, year);
-                    continue;
-                }
-                entities.add(WorldBankInflation.fromDto(dto, currency));
-            }
+            entities.addAll(fetchFromWorldBank(currency, year));
         }
 
         log.info("Fetched {} World Bank annual inflation record(s) for {} across {} tracked currencies",
                 entities.size(), year, Currency.values().length);
+        return entities;
+    }
+
+    @Override
+    public List<WorldBankInflation> fetchFromWorldBank(Currency currency, int year) {
+        log.info("Requesting World Bank annual inflation records for {} in {}", currency, year);
+
+        List<WorldBankInflation> entities = new ArrayList<>();
+        for (WorldBankInflationRecordDto dto :
+                worldBankInflationClient.fetchAnnualInflationRecords(currency, year)) {
+            // The World Bank returns an explicit null for years without data
+            // (e.g. future years); skip them instead of persisting a zero rate.
+            if (!dto.hasValue()) {
+                log.warn("World Bank returned no value for {} in {} - skipping", currency, year);
+                continue;
+            }
+            entities.add(WorldBankInflation.fromDto(dto, currency));
+        }
+
+        log.info("Fetched {} World Bank annual inflation record(s) for {} in {}",
+                entities.size(), currency, year);
         return entities;
     }
 
@@ -110,7 +120,13 @@ public class WorldBankInflationServiceImpl implements WorldBankInflationService 
     @Override
     @Transactional(readOnly = true)
     public Optional<WorldBankInflation> findHeadlineAnnualCpi(int year) {
-        return worldBankInflationRepository.findByInflationYearAndCurrency(year, Currency.UAH);
+        return findHeadlineAnnualCpi(Currency.UAH, year);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<WorldBankInflation> findHeadlineAnnualCpi(Currency currency, int year) {
+        return worldBankInflationRepository.findByInflationYearAndCurrency(year, currency);
     }
 
     private static String businessKey(WorldBankInflation entity) {

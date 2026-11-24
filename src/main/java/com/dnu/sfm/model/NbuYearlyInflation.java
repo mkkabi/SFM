@@ -40,7 +40,10 @@ public class NbuYearlyInflation {
     private Long id;
 
     /**
-     * Calendar year of the inflation record (e.g., 2025).
+     * Calendar year the annual figure describes (e.g., 2025). The NBU annual
+     * dataset publishes each figure dated January 1 of the following year
+     * (dt=20260101 carries 2025's rate), so the covered year is derived from
+     * the publication date with a one-year shift.
      */
     @Column(name = "inflation_year", nullable = false)
     private Integer inflationYear;
@@ -88,8 +91,8 @@ public class NbuYearlyInflation {
      *         data fails loudly instead of being persisted under the wrong year.
      */
     public static NbuYearlyInflation fromDto(NbuYearlyInflationRecordDto dto) {
-        Year year = dto.toYear();
-        if (year == null) {
+        Year coveredYear = dto.toCoveredYear();
+        if (coveredYear == null) {
             throw new IllegalStateException(
                     "Unparseable NBU date '" + dto.dt() + "' - refusing to persist the record");
         }
@@ -100,7 +103,7 @@ public class NbuYearlyInflation {
         }
 
         return new NbuYearlyInflation(
-                year.getValue(),
+                coveredYear.getValue(),
                 dto.toRatePercent(),
                 dto.tzep(),
                 dto.mcrd081(),

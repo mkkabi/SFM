@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{elements.html :: head('StatBureau annual inflation chart')}">
+</head>
+
+
+<body>
+<div th:replace="~{elements.html :: navbar}"></div>
+
+<div class="container pb-5">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 fw-bold mb-1">
+                StatBureau Annual Inflation &mdash; Scatter Plot
+                <span class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle align-middle fs-6">USD</span>
+            </h2>
+            <p class="text-muted small mb-0">
+                United States annual consumer price inflation (December to December) from StatBureau.org
+            </p>
+        </div>
+        <div>
+            <a th:href="@{/accounts}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Accounts
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <span th:text="${errorMessage}">Error occurred</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <!-- Shown only when this request actually had to call the StatBureau API -->
+    <div th:if="${series != null and !#lists.isEmpty(series.fetchedFromApiYears)}"
+         class="alert alert-info alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-cloud-download-fill me-2"></i>
+        <span th:text="${#strings.listJoin(series.fetchedFromApiYears, ', ')}">2021</span>
+        <span th:with="cnt=${#lists.size(series.fetchedFromApiYears)}"
+              th:text="${cnt == 1} ? 'was missing in the database: fetched from the StatBureau API and stored for future use.'
+                                : ' were missing in the database: fetched from the StatBureau API and stored for future use.'">
+            was missing in the database: fetched from the StatBureau API and stored for future use.
+        </span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${series != null and !#lists.isEmpty(series.unavailableYears)}"
+         class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        No annual data could be retrieved from the StatBureau API for:
+        <strong th:text="${#strings.listJoin(series.unavailableYears, ', ')}">2025</strong>.
+        The chart shows the remaining years only.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Range Picker Card -->
+    <div class="card mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <span class="fw-semibold text-secondary">
+                    <i class="bi bi-sliders me-1"></i> Chart range:
+                </span>
+                <div class="btn-group" role="group" aria-label="Chart range in years">
+                    <a th:each="range : ${allowedRanges}"
+                       th:href="@{/inflation/statbureau/annual-chart(years=${range})}"
+                       class="btn"
+                       th:classappend="${range == selectedYears} ? 'btn-primary' : 'btn-outline-primary'">
+                        <span th:text="${range}">5</span> years
+                    </a>
+                </div>
+                <span class="text-muted small ms-auto" th:if="${series != null}">
+                    Window: <strong th:text="${series.fromYear}">2021</strong>&ndash;<strong th:text="${series.toYear}">2025</strong>
+                    (last <span th:text="${series.requestedYears}">5</span> completed years;
+                    the running year is excluded until its annual rate is final)
+                </span>
+            </div>
+            <p class="text-muted small mb-0 mt-3">
+                <i class="bi bi-database-check me-1"></i>
+                Stored years are plotted straight from the local database; for any year missing in the DB
+                the app fetches the annual figure from the StatBureau API and caches it for future requests.
+            </p>
+        </div>
+    </div>
+
+    <!-- CASE 1: No usable data at all for the selected window -->
+    <div th:if="${series == null or #lists.isEmpty(series.points)}"
+         class="card border-warning border-opacity-50 bg-light-subtle shadow-sm">
+        <div class="card-body p-5 text-center">
+            <div class="mb-3">
+                <span class="badge bg-warning-subtle text-warning-emphasis p-3 rounded-circle">
+                    <i class="bi bi-bar-chart fs-1"></i>
+                </span>
+            </div>
+            <h4 class="fw-bold text-dark mb-2">Nothing To Plot Yet</h4>
+            <p class="text-secondary mb-0 mx-auto" style="max-width: 520px;">
+                No annual inflation data is available for the selected window.
+                Check the warnings above &mdash; the StatBureau API may be unreachable or the figures
+                may not be published yet. Please try again later.
+            </p>
+        </div>
+    </div>
+
+    <!-- CASE 2: Chart + stats + data table -->
+    <div th:if="${series != null and !#lists.isEmpty(series.points)}">
+
+        <!-- Scatter Chart -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 fw-bold">
+                    <i class="bi bi-graph-up me-2 text-primary"></i>
+                    Annual inflation, % (USD) &mdash;
+                    <span th:text="${series.fromYear}">2021</span>&ndash;<span th:text="${series.toYear}">2025</span>
+                    <span class="text-muted small fw-normal ms-2">
+                        (<span th:text="${#lists.size(series.points)}">5</span> points)
+                    </span>
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <div style="height: 420px; position: relative;">
+                    <canvas id="inflationScatterChart"></canvas>
+                </div>
+                <div class="d-flex flex-wrap gap-4 mt-3 small text-secondary">
+                    <span class="fw-semibold">Severity color bands:</span>
+                    <span><span class="chart-legend-dot" style="background-color: rgb(25, 135, 84);"></span> below 5%</span>
+                    <span><span class="chart-legend-dot" style="background-color: rgb(255, 193, 7);"></span> 5&ndash;10%</span>
+                    <span><span class="chart-legend-dot" style="background-color: rgb(253, 126, 20);"></span> 10&ndash;20%</span>
+                    <span><span class="chart-legend-dot" style="background-color: rgb(220, 53, 69);"></span> 20% and above</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Strip -->
+        <div class="row g-3 mb-4" th:if="${stats != null}">
+            <div class="col-md-3 col-sm-6">
+                <div class="card h-100 border-0 bg-primary-subtle shadow-sm">
+                    <div class="card-body text-center p-3">
+                        <div class="text-primary-emphasis small fw-semibold text-uppercase">Average</div>
+                        <div class="fs-3 fw-bold text-primary-emphasis mt-1">
+                            <span th:text="${#numbers.formatDecimal(stats.average, 1, 2)}">12.00</span>%
+                        </div>
+                        <div class="text-secondary small">
+                            <span th:text="${series.fromYear}">2021</span>&ndash;<span th:text="${series.toYear}">2025</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card h-100 border-0 bg-danger-subtle shadow-sm">
+                    <div class="card-body text-center p-3">
+                        <div class="text-danger-emphasis small fw-semibold text-uppercase">
+                            <i class="bi bi-arrow-up-circle me-1"></i>Highest
+                        </div>
+                        <div class="fs-3 fw-bold text-danger-emphasis mt-1">
+                            <span th:text="${#numbers.formatDecimal(stats.highest.ratePercent, 1, 2)}">26.60</span>%
+                        </div>
+                        <div class="text-secondary small">in <span th:text="${stats.highest.year}">2022</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card h-100 border-0 bg-success-subtle shadow-sm">
+                    <div class="card-body text-center p-3">
+                        <div class="text-success-emphasis small fw-semibold text-uppercase">
+                            <i class="bi bi-arrow-down-circle me-1"></i>Lowest
+                        </div>
+                        <div class="fs-3 fw-bold text-success-emphasis mt-1">
+                            <span th:text="${#numbers.formatDecimal(stats.lowest.ratePercent, 1, 2)}">5.10</span>%
+                        </div>
+                        <div class="text-secondary small">in <span th:text="${stats.lowest.year}">2024</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card h-100 border-0 bg-secondary-subtle shadow-sm">
+                    <div class="card-body text-center p-3">
+                        <div class="text-secondary-emphasis small fw-semibold text-uppercase">
+                            <i class="bi bi-clock-history me-1"></i>Latest
+                        </div>
+                        <div class="fs-3 fw-bold text-secondary-emphasis mt-1">
+                            <span th:text="${#numbers.formatDecimal(stats.latest.ratePercent, 1, 2)}">12.00</span>%
+                        </div>
+                        <div class="text-secondary small">in <span th:text="${stats.latest.year}">2025</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Source Data Table -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 fw-bold">
+                    <i class="bi bi-table me-2 text-primary"></i>Plotted Data
+                    <span class="text-muted small fw-normal ms-2">
+                        United States annual CPI, currency
+                        <span class="badge bg-secondary-subtle text-secondary-emphasis">USD</span>,
+                        StatBureau economy
+                        <span class="badge bg-secondary-subtle text-secondary-emphasis">united-states</span>
+                    </span>
+                </h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th scope="col">Year</th>
+                        <th scope="col">Annual Inflation</th>
+                        <th scope="col">Source</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${series.points}">
+                        <td class="fw-semibold" th:text="${p.year}">2024</td>
+                        <td>
+                            <span class="fw-bold"
+                                  th:classappend="${p.ratePercent > 0 ? 'text-danger' : (p.ratePercent < 0 ? 'text-success' : 'text-secondary')}">
+                                <span th:text="${p.ratePercent > 0 ? '+' : ''}">+</span><span
+                                    th:text="${#numbers.formatDecimal(p.ratePercent, 1, 2)}">2.89</span>%
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${p.source == 'database'}"
+                                  class="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+                                <i class="bi bi-database-check me-1"></i>Local database
+                            </span>
+                            <span th:if="${p.source == 'api'}"
+                                  class="badge bg-info-subtle text-info-emphasis border border-info-subtle">
+                                <i class="bi bi-cloud-download me-1"></i>Fetched from StatBureau API
+                            </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<br>
+<br>
+<br>
+
+<!-- Chart.js (vendored locally, same pattern as KaTeX) -->
+<script th:src="@{/js/vendor/chartjs/chart.umd.min.js}" type="text/javascript"></script>
+
+<!-- Chart payload injected by the controller (pre-serialized JSON) -->
+<script th:inline="none" th:utext="'const inflationPoints = ' + ${pointsJson} + ';'">
+    const inflationPoints = [];
+</script>
+<script th:inline="none" th:utext="'const chartMeta = ' + ${chartMetaJson} + ';'">
+    const chartMeta = {};
+</script>
+
+<!-- Scatter plot initialization -->
+<script type="text/javascript">
+    (function () {
+        const canvas = document.getElementById('inflationScatterChart');
+        if (!canvas || typeof Chart === 'undefined'
+            || !Array.isArray(inflationPoints) || inflationPoints.length === 0) {
+            return; // empty state (no data) is rendered server-side
+        }
+
+        // Severity color bands, matching the legend under the chart
+        function colorFor(rate) {
+            if (rate >= 20) return {fill: 'rgba(220, 53, 69, 0.75)', border: 'rgb(162, 34, 44)'};
+            if (rate >= 10) return {fill: 'rgba(253, 126, 20, 0.75)', border: 'rgb(196, 93, 8)'};
+            if (rate >= 5) return {fill: 'rgba(255, 193, 7, 0.75)', border: 'rgb(190, 145, 0)'};
+            return {fill: 'rgba(25, 135, 84, 0.75)', border: 'rgb(21, 108, 66)'};
+        }
+
+        const fills = inflationPoints.map(p => colorFor(p.ratePercent).fill);
+        const borders = inflationPoints.map(p => colorFor(p.ratePercent).border);
+
+        new Chart(canvas, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Annual inflation (%)',
+                    data: inflationPoints.map(p => ({x: p.year, y: p.ratePercent})),
+                    backgroundColor: fills,
+                    borderColor: borders,
+                    borderWidth: 2,
+                    pointRadius: 10,
+                    pointHoverRadius: 12,
+                    pointHoverBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        min: chartMeta.fromYear - 0.5,
+                        max: chartMeta.toYear + 0.5,
+                        // One exact integer tick per plotted year (the axis bounds
+                        // are padded by 0.5, so default ticks would be half-integers)
+                        afterBuildTicks: (scale) => {
+                            const from = chartMeta.fromYear, to = chartMeta.toYear;
+                            scale.ticks = Array.from({length: to - from + 1}, (_, i) => ({value: from + i}));
+                        },
+                        title: {display: true, text: 'Year', font: {weight: 'bold'}},
+                        ticks: {callback: (value) => value}
+                    },
+                    y: {
+                        title: {display: true, text: 'Annual inflation (%)', font: {weight: 'bold'}},
+                        grace: '10%',
+                        ticks: {callback: (value) => value + '%'}
+                    }
+                },
+                plugins: {
+                    legend: {display: false},
+                    tooltip: {
+                        backgroundColor: 'rgba(33, 37, 41, 0.95)',
+                        callbacks: {
+                            title: (items) => 'Year ' + items[0].parsed.x,
+                            label: (item) => {
+                                const p = inflationPoints[item.dataIndex];
+                                const src = p && p.source === 'api'
+                                    ? 'fetched from StatBureau API this request'
+                                    : 'read from local database';
+                                return [' ' + item.parsed.y.toFixed(2) + '% year-over-year', 'source: ' + src];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    })();
+</script>
+
+<footer th:replace="~{elements.html :: footer}"></footer>
+</body>
+</html>

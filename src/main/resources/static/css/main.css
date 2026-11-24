@@ -516,3 +516,14 @@ tr:last-child td {
     overflow-y: hidden;
 }
 
+
+/* NBU annual inflation scatter chart */
+.chart-legend-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+}

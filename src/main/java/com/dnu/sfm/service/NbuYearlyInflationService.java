@@ -13,8 +13,13 @@ import java.util.Optional;
 public interface NbuYearlyInflationService {
 
     /**
-     * Fetches all annual inflation records for the given calendar year from the
-     * NBU API and converts them to entities. Performs no database access.
+     * Fetches all annual inflation records describing the given calendar year
+     * from the NBU API and converts them to entities. Performs no database access.
+     * <p>
+     * The NBU StatService publishes the annual (Dec-to-Dec) figure of a year in
+     * January of the following year, so the underlying request targets January
+     * of {@code year + 1}; the returned rows are re-keyed to the covered year
+     * by {@link NbuYearlyInflation#fromDto}.
      *
      * @return the fetched entities; empty if the NBU API returned no data
      * @throws IllegalStateException if a fetched record cannot be converted

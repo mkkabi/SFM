@@ -87,6 +87,20 @@
                         </li>
 
 
+                        <li class="nav-item dropdown">
+                            <a th:href="@{#}" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Inflation Charts
+                            </a>
+
+                            <ul class="dropdown-menu" >
+                                <li><a th:href="@{/inflation/nbu/annual-chart}" class="dropdown-item" >NBU Annual Chart</a></li>
+                                <li><a th:href="@{/inflation/worldbank/annual-chart}" class="dropdown-item" >World Bank Annual Chart</a></li>
+                                <li><a th:href="@{/inflation/statbureau/annual-chart}" class="dropdown-item" >StatBureau Annual Chart</a></li>
+                            </ul>
+
+                        </li>
+
+
                         <li class="nav-item">
                             <a th:href="@{/interest-calculator}" class="nav-link active" aria-current="page">Interest calculator</a>
                         </li>

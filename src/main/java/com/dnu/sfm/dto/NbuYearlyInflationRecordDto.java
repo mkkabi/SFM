@@ -75,6 +75,22 @@ public record NbuYearlyInflationRecordDto(
     }
 
     /**
+     * Extracts the calendar year the annual figure DESCRIBES.
+     * <p>
+     * The NBU annual dataset dates every row with its publication date, and the
+     * endpoint only accepts January queries ("date=YYYY01"), so each row is
+     * dated January 1 of the year after the one it covers: the row dt=20250101
+     * (fetched with date=202501) carries the annual (Dec-to-Dec) figure of 2024
+     * (+12.0%), dt=20260101 carries 2025 (+8.0%), dt=20230101 carries 2022
+     * (+26.6%), etc. Persisting the raw publication year would shift the whole
+     * series one year into the future, hence the one-year shift here.
+     */
+    public Year toCoveredYear() {
+        Year publicationYear = toYear();
+        return publicationYear != null ? publicationYear.minusYears(1) : null;
+    }
+
+    /**
      * Returns the annual inflation growth rate as a percentage.
      * NBU "DTPY_" index represents percentage change directly (e.g. 26.6 for +26.6%).
      */
